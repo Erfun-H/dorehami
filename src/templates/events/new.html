@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}New get-together{% endblock %}
+
+{% block content %}
+  <h1 class="mb-6 text-2xl font-semibold">Create a get-together</h1>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <div>
+      <label for="{{ form.title.id_for_label }}" class="block text-sm font-medium">Title</label>
+      {{ form.title }}
+      {% if form.title.errors %}
+        <p class="mt-1 text-sm text-red-700">{{ form.title.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+    <div>
+      <label for="{{ form.details.id_for_label }}" class="block text-sm font-medium">Details</label>
+      {{ form.details }}
+      {% if form.details.errors %}
+        <p class="mt-1 text-sm text-red-700">{{ form.details.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+    <button type="submit" class="rounded bg-stone-900 px-4 py-2 text-white">Create</button>
+  </form>
+{% endblock %}

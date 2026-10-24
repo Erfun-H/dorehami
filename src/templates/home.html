@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Your get-togethers{% endblock %}
+
+{% block content %}
+  {% if user.is_authenticated %}
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="text-2xl font-semibold">Your get-togethers</h1>
+      <a href="{% url 'event-create' %}" class="underline">Create an event</a>
+    </div>
+    {% if events %}
+      <ul class="space-y-3">
+        {% for event in events %}
+          <li>
+            <a href="{% url 'event-detail' event.invite_token %}" class="underline">{{ event.title }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You have not joined a get-together yet.</p>
+    {% endif %}
+  {% else %}
+    <h1 class="text-2xl font-semibold">Coordinate a get-together</h1>
+    <p class="mt-3">Sign in or create an account to plan with friends.</p>
+    <p class="mt-4 flex gap-4">
+      <a href="{% url 'login' %}" class="underline">Sign in</a>
+      <a href="{% url 'signup' %}" class="underline">Sign up</a>
+    </p>
+  {% endif %}
+{% endblock %}
