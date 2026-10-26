@@ -1,9 +1,12 @@
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.urls import reverse
 
 from events.models import Agreement, Event, Participation, Suggestion
+
+TEHRAN = ZoneInfo("Asia/Tehran")
 
 
 def suggestion_url(event):
@@ -27,7 +30,7 @@ def test_participant_creates_a_suggestion_attributed_to_their_participation(clie
     response = client.post(
         suggestion_url(event),
         {
-            "proposed_at": "2026-10-24T18:30",
+            "proposed_at": "1405-08-02 18:30",
             "location": "  The park  ",
             "description": "Bring dessert",
         },
@@ -38,8 +41,47 @@ def test_participant_creates_a_suggestion_attributed_to_their_participation(clie
     assert response.url == reverse("event-detail", args=[event.invite_token])
     assert suggestion.author.user == organizer
     assert suggestion.location == "The park"
-    assert suggestion.proposed_at == datetime(2026, 10, 24, 18, 30, tzinfo=UTC)
+    assert suggestion.proposed_at == datetime(2026, 10, 24, 18, 30, tzinfo=TEHRAN)
     assert Agreement.objects.count() == 0
+
+
+@pytest.mark.django_db
+def test_entered_times_round_trip_through_tehran_time(client, user_factory):
+    organizer = user_factory(email="organizer@example.com", name="Organizer")
+    event = Event.objects.create(organizer=organizer, title="Dinner")
+    client.force_login(organizer)
+
+    client.post(
+        suggestion_url(event),
+        {"proposed_at": "1405-08-02 18:30", "location": "Cafe"},
+    )
+
+    suggestion = Suggestion.objects.get()
+    assert suggestion.proposed_at == datetime(2026, 10, 24, 15, 0, tzinfo=UTC)
+    page = client.get(reverse("event-detail", args=[event.invite_token]))
+    assert "18:30" in page.content.decode()
+
+
+@pytest.mark.django_db
+def test_edit_form_is_prefilled_with_the_suggestion_values(client, user_factory):
+    organizer = user_factory(email="organizer@example.com", name="Organizer")
+    event = Event.objects.create(organizer=organizer, title="Dinner")
+    Suggestion.objects.create(
+        event=event,
+        author=Participation.objects.get(event=event, user=organizer),
+        proposed_at=datetime(2026, 10, 24, 18, 30, tzinfo=UTC),
+        location="The park",
+        description="Bring dessert",
+    )
+    client.force_login(organizer)
+
+    response = client.get(reverse("event-detail", args=[event.invite_token]))
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'name="location" value="The park"' in content
+    assert 'value="1405-08-02 22:00:00"' in content
+    assert "Bring dessert</textarea>" in content
 
 
 @pytest.mark.django_db
@@ -50,12 +92,12 @@ def test_blank_location_creates_no_suggestion(client, user_factory):
 
     response = client.post(
         suggestion_url(event),
-        {"proposed_at": "2026-10-24T18:30", "location": "   "},
+        {"proposed_at": "1405-08-02 18:30", "location": "   "},
     )
 
     assert response.status_code == 200
     assert Suggestion.objects.count() == 0
-    assert "location" in response.context["form"].errors
+    assert "location" in response.context["suggestion_form"].errors
 
 
 @pytest.mark.django_db
@@ -74,12 +116,12 @@ def test_only_the_author_can_edit_and_editing_keeps_agreements(client, user_fact
         event=event,
         suggestion=suggestion,
         participant=Participation.objects.get(event=event, user=organizer),
-    )
+        )
     client.force_login(organizer)
 
     forbidden = client.post(
         edit_url(event, suggestion),
-        {"proposed_at": "2026-10-25T19:00", "location": "Cafe"},
+        {"proposed_at": "1405-08-03 19:00", "location": "Cafe"},
     )
     assert forbidden.status_code == 403
     suggestion.refresh_from_db()
@@ -88,7 +130,7 @@ def test_only_the_author_can_edit_and_editing_keeps_agreements(client, user_fact
     client.force_login(author_user)
     allowed = client.post(
         edit_url(event, suggestion),
-        {"proposed_at": "2026-10-25T19:00", "location": "Cafe"},
+        {"proposed_at": "1405-08-03 19:00", "location": "Cafe"},
     )
     assert allowed.status_code == 302
     suggestion.refresh_from_db()

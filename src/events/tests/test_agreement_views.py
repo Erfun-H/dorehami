@@ -39,6 +39,29 @@ def test_agreeing_moves_the_participants_only_agreement(client, user_factory):
 
 
 @pytest.mark.django_db
+def test_agreeing_with_json_returns_authoritative_agreement_lists(client, user_factory):
+    organizer = user_factory(email="organizer@example.com", name="Organizer")
+    invitee = user_factory(email="invitee@example.com", name="Invitee")
+    event = Event.objects.create(organizer=organizer, title="Dinner")
+    Participation.objects.create(event=event, user=invitee)
+    first = make_suggestion(event, "Park", 18)
+    second = make_suggestion(event, "Cafe", 19)
+    client.force_login(invitee)
+
+    response = client.post(
+        reverse("suggestion-agree", args=[event.invite_token, second.pk]),
+        HTTP_ACCEPT="application/json",
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "agreement": {"suggestion_id": second.pk},
+        "agreements": {str(first.pk): [], str(second.pk): ["Invitee"]},
+    }
+    assert Agreement.objects.get(event=event, participant__user=invitee).suggestion == second
+
+
+@pytest.mark.django_db
 def test_a_suggestion_from_another_event_is_not_found(client, user_factory):
     organizer = user_factory(email="organizer@example.com")
     event = Event.objects.create(organizer=organizer, title="Dinner")

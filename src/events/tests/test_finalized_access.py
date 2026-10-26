@@ -57,7 +57,7 @@ def test_non_participants_see_the_generic_unavailable_page(client, user_factory)
 
     assert response.status_code == 404
     content = response.content.decode()
-    assert "unavailable" in content.lower()
+    assert "در دسترس نیست" in content
     assert "Secret dinner" not in content
     assert "Private" not in content
     assert "The park" not in content

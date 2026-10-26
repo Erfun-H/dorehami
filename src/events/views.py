@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.http import Http404
+from django.db.models import Count
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
@@ -48,6 +49,63 @@ def _suggestion_for_event(event, suggestion_id):
     return suggestion
 
 
+def _detail_context(
+    event,
+    participation,
+    suggestion_form=None,
+    finalize_error=None,
+    failed_edit=None,
+    **kwargs,
+):
+    suggestions = list(
+        event.suggestions.annotate(agreements_count=Count("agreements"))
+        .select_related("author__user")
+        .prefetch_related("agreements__participant__user")
+        .order_by("-agreements_count", "-created_at")
+    )
+    items = []
+    for suggestion in suggestions:
+        edit_form = SuggestionForm(instance=suggestion)
+        if failed_edit is not None and failed_edit.instance.pk == suggestion.pk:
+            edit_form = failed_edit
+        items.append(
+            {
+                "suggestion": suggestion,
+                "edit_form": edit_form,
+                "voters": [
+                    agreement.participant.user.name
+                    for agreement in suggestion.agreements.all()
+                ],
+                "voters_element_id": f"voters-data-{suggestion.pk}",
+            }
+        )
+    candidates = []
+    if event.status == Event.Status.ACTIVE:
+        candidates = highest_suggestions(event)
+    is_organizer = event.organizer_id == participation.user_id
+    leading_ids = (
+        {candidate.pk for candidate in candidates}
+        if candidates and candidates[0].agreement_count > 0
+        else set()
+    )
+    return {
+        "event": event,
+        "participation": participation,
+        "suggestion_items": items,
+        "suggestion_form": suggestion_form or SuggestionForm(),
+        "participants": event.participations.select_related("user").order_by(
+            "joined_at"
+        ),
+        "leading_ids": leading_ids,
+        "tied_suggestions": candidates if is_organizer and len(candidates) > 1 else [],
+        "winning_suggestion": (
+            candidates[0] if is_organizer and len(candidates) == 1 else None
+        ),
+        "finalize_error": finalize_error,
+        **kwargs,
+    }
+
+
 @login_required
 def create_event(request):
     form = EventCreateForm(request.POST or None)
@@ -75,23 +133,14 @@ def event_detail(request, token):
         return render(request, "events/unavailable.html", status=404)
     if event.status == Event.Status.ACTIVE and participation is None:
         participation = Participation.objects.create(event=event, user=request.user)
-    suggestions = event.suggestions.select_related("author__user").prefetch_related(
-        "agreements__participant__user"
-    )
-    tied = []
-    if event.status == Event.Status.ACTIVE and request.user == event.organizer:
-        candidates = highest_suggestions(event)
-        tied = candidates if len(candidates) > 1 else []
     return render(
         request,
         "events/detail.html",
-        {
-            "event": event,
-            "participation": participation,
-            "suggestions": suggestions,
-            "suggestion_form": SuggestionForm(),
-            "tied_suggestions": tied,
-        },
+        _detail_context(
+            event,
+            participation,
+            user_agreement=participation.agreements.filter(event=event).first(),
+        ),
     )
 
 
@@ -106,18 +155,16 @@ def create_suggestion(request, token):
         suggestion.event = event
         suggestion.author = participation
         suggestion.save()
+        if "application/json" in request.headers.get("Accept", ""):
+            return JsonResponse({"success": True, "suggestion_id": suggestion.pk})
         return redirect("event-detail", token=event.invite_token)
+    if "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse(
+            {"success": False, "errors": {f: list(e) for f, e in form.errors.items()}},
+            status=400,
+        )
     return render(
-        request,
-        "events/detail.html",
-        {
-            "event": event,
-            "participation": participation,
-            "suggestions": event.suggestions.all(),
-            "suggestion_form": form,
-            "form": form,
-            "tied_suggestions": [],
-        },
+        request, "events/detail.html", _detail_context(event, participation, form)
     )
 
 
@@ -130,10 +177,14 @@ def edit_suggestion(request, token, suggestion_id):
     if suggestion.author_id != participation.id:
         raise PermissionDenied
     form = SuggestionForm(request.POST, instance=suggestion)
-    if not form.is_valid():
-        raise PermissionDenied
-    form.save()
-    return redirect("event-detail", token=event.invite_token)
+    if form.is_valid():
+        form.save()
+        return redirect("event-detail", token=event.invite_token)
+    return render(
+        request,
+        "events/detail.html",
+        _detail_context(event, participation, failed_edit=form),
+    )
 
 
 @login_required
@@ -165,7 +216,22 @@ def agree_suggestion(request, token, suggestion_id):
         )
         if not created and agreement.suggestion_id != suggestion.id:
             agreement.suggestion = suggestion
-            agreement.save(update_fields=["suggestion", "updated_at"])
+            agreement.save()
+    if "application/json" in request.headers.get("Accept", ""):
+        agreements = Agreement.objects.filter(event=event).values(
+            "suggestion_id", "participant__user__name"
+        )
+        grouped = {str(item.pk): [] for item in event.suggestions.all()}
+        for agreement_item in agreements:
+            grouped[str(agreement_item["suggestion_id"])].append(
+                agreement_item["participant__user__name"]
+            )
+        return JsonResponse(
+            {
+                "agreement": {"suggestion_id": suggestion.pk},
+                "agreements": grouped,
+            }
+        )
     return redirect("event-detail", token=event.invite_token)
 
 
@@ -181,17 +247,11 @@ def finalize(request, token):
     try:
         finalize_event(event, request.user, suggestion_id)
     except ValidationError as exc:
-        candidates = highest_suggestions(event)
         message = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+        participation = _participation(event, request.user)
         return render(
             request,
             "events/detail.html",
-            {
-                "event": event,
-                "suggestions": event.suggestions.all(),
-                "suggestion_form": SuggestionForm(),
-                "tied_suggestions": candidates if len(candidates) > 1 else [],
-                "finalize_error": message,
-            },
+            _detail_context(event, participation, finalize_error=message),
         )
     return redirect("event-detail", token=event.invite_token)
