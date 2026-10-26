@@ -12,25 +12,23 @@ class SignUpForm(forms.ModelForm):
         fields = ["email", "name"]
 
     def clean_email(self):
-        email = User.objects.normalize_email((self.cleaned_data.get("email") or "").strip())
+        email = User.objects.normalize_email(self.cleaned_data.get("email", "").strip())
         if email and User.objects.filter(email__iexact=email).exists():
-            raise forms.ValidationError(
-                "An account with this email already exists. Sign in instead."
-            )
+            raise forms.ValidationError("حسابی با این ایمیل از قبل وجود دارد؛ وارد شوید.")
         return email
 
     def clean_name(self):
-        name = (self.cleaned_data.get("name") or "").strip()
+        name = self.cleaned_data.get("name", "").strip()
         if not name:
-            raise forms.ValidationError("A name is required.")
+            raise forms.ValidationError("نام الزامی است.")
         if len(name) > 150:
-            raise forms.ValidationError("The name must be 150 characters or fewer.")
+            raise forms.ValidationError("نام باید حداکثر ۱۵۰ کاراکتر باشد.")
         return name
 
     def clean_password(self):
-        password = self.cleaned_data.get("password") or ""
+        password = self.cleaned_data.get("password", "")
         if not password:
-            raise forms.ValidationError("A password is required.")
+            raise forms.ValidationError("رمز عبور الزامی است.")
         validate_password(password)
         return password
 
@@ -48,12 +46,12 @@ class SignUpForm(forms.ModelForm):
 class LoginForm(forms.Form):
     email = forms.EmailField()
     password = forms.CharField(widget=forms.PasswordInput, strip=False)
-    generic_error = "The credentials are not valid."
+    generic_error = "اطلاعات ورود معتبر نیست."
 
     def clean(self):
         cleaned = super().clean()
-        email = User.objects.normalize_email((cleaned.get("email") or "").strip())
-        password = cleaned.get("password") or ""
+        email = User.objects.normalize_email(cleaned.get("email", "")).strip()
+        password = cleaned.get("password", "")
         user = None
         if email and password:
             candidate = User.objects.filter(email__iexact=email, is_active=True).first()

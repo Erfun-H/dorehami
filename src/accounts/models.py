@@ -46,7 +46,7 @@ class User(AbstractUser):
         self.email = self.__class__.objects.normalize_email(self.email or "")
         self.name = (self.name or "").strip()
         if not self.name:
-            raise ValidationError({"name": "A name is required."})
+            raise ValidationError({"name": "نام الزامی است."})
 
     def save(self, *args, **kwargs):
         self.email = self.__class__.objects.normalize_email(self.email or "")
@@ -54,4 +54,4 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.email})"

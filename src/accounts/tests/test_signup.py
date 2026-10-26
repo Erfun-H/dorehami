@@ -33,7 +33,7 @@ def test_signup_rejects_a_duplicate_email_without_creating_a_user():
 
     assert not form.is_valid()
     assert "email" in form.errors
-    assert "sign in" in form.errors["email"][0].lower()
+    assert "وارد شوید" in form.errors["email"][0]
     assert User.objects.count() == 1
 
 

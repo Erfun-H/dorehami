@@ -89,6 +89,30 @@ def test_inactive_account_gets_the_same_generic_login_failure(client, user_facto
 
 
 @pytest.mark.django_db
+def test_invitation_next_survives_failed_login_then_signup_and_joins_event(client, user_factory):
+    from events.models import Event, Participation
+
+    organizer = user_factory(email="organizer@example.com")
+    event = Event.objects.create(organizer=organizer, title="Dinner")
+    invitation_url = reverse("event-detail", args=[event.invite_token])
+
+    invitation = client.get(invitation_url)
+    assert invitation.status_code == 302
+    login_url = invitation.url
+    failed = client.post(login_url, {"email": "missing@example.com", "password": "wrong-pass"})
+    assert failed.status_code == 200
+    assert failed.context["next"] == invitation_url
+    signup_url = reverse("signup") + f"?next={failed.context['next']}"
+    response = client.post(
+        signup_url,
+        {"email": "invitee@example.com", "password": "a-long-unique-passphrase", "name": "Invitee"},
+    )
+    assert response.url == invitation_url
+    client.get(response.url)
+    assert Participation.objects.filter(event=event, user__email="invitee@example.com").exists()
+
+
+@pytest.mark.django_db
 def test_logout_ends_the_session(client, user_factory):
     client.force_login(user_factory(email="ada@example.com", name="Ada"))
 
