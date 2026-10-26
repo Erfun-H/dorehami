@@ -1,4 +1,8 @@
 Django==6.1.2
+# Serves the Persian (fa-IR) interface only: jDateField powers Jalali date/time
+# entry in the suggestion form and its templatetags supply the `jformat` filter
+# used to render Jalali dates. Registered in INSTALLED_APPS as required by both.
+django-jalali==7.4.0
 psycopg[binary]==3.3.6
 pytest==9.1.1
 pytest-django==4.14.0
