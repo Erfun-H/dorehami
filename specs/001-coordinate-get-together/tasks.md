@@ -305,3 +305,16 @@ With multiple developers:
 
 ---
 
+
+## Phase 8: Convergence
+
+**Purpose**: Close the gap between the artifacts and the current implementation (convergence run 2026-10-25). Findings and priorities were reviewed with the product owner before execution.
+
+- [x] T058 Repair the five template tags split across newlines in `src/templates/events/detail.html` so every event-detail render succeeds per FR-005…FR-022 (partial)
+- [x] T059 Show every participant's name on the event page in `src/templates/events/detail.html` per FR-016 (missing)
+- [x] T060 Prefill each suggestion's edit form in `src/templates/events/detail.html` with that suggestion's current values per US3/AC4 and FR-017 (partial)
+- [x] T061 Translate `src/templates/home.html`, `src/templates/events/unavailable.html`, and all user-facing validation messages in `src/accounts/forms.py`, `src/events/forms.py`, `src/events/models.py`, and `src/events/services.py` into natural Persian per user direction and SC-001/SC-003 (partial)
+- [x] T062 Redesign `src/templates/home.html` and `src/templates/events/unavailable.html` with the existing design system, add the missing `.error` style to `src/theme/input.css`, and recompile `src/static/css/app.css` per user direction (partial)
+- [x] T063 Set `LANGUAGE_CODE="fa"` and `TIME_ZONE="Asia/Tehran"` in `src/config/settings.py` and verify Jalali input, stored instants, and displayed Tehran times with regression tests per user direction (partial)
+- [x] T064 Document the `django-jalali` dependency rationale in `requirements.txt` per Constitution I (unrequested)
+- [x] T065 Consolidate the duplicated invitation-join tests into `src/events/tests/test_join.py` and remove `src/events/tests/test_join_event.py` per Constitution II (unrequested)
