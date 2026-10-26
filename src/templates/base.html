@@ -1,32 +1,5 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Dorehami{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
-  </head>
-  <body class="min-h-screen bg-stone-50 text-stone-900">
-    <header class="border-b border-stone-200 bg-white">
-      <div class="mx-auto flex max-w-3xl items-center justify-between px-4 py-4">
-        <a href="{% url 'home' %}" class="text-lg font-semibold">Dorehami</a>
-        <nav class="flex items-center gap-4 text-sm">
-          {% if user.is_authenticated %}
-            <span>{{ user.name }}</span>
-            <form method="post" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <button type="submit" class="underline">Log out</button>
-            </form>
-          {% else %}
-            <a href="{% url 'login' %}" class="underline">Sign in</a>
-            <a href="{% url 'signup' %}" class="underline">Sign up</a>
-          {% endif %}
-        </nav>
-      </div>
-    </header>
-    <main class="mx-auto max-w-3xl px-4 py-8">
-      {% block content %}{% endblock %}
-    </main>
-  </body>
-</html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{% block title %}دورهمی{% endblock %}</title> <link rel="shortcut icon" href="{% static 'images/logo.png' %}" type="image/x-icon"> <link rel="stylesheet" href="{% static 'css/app.css' %}"><link rel="stylesheet" href="{% static 'vendor/jalali-datepicker/jalalidatepicker.min.css' %}">{% block extra_css %}{% endblock %}</head>
+<body><header><div class="shell nav"><a href="{% url 'home' %}" class="brand">دورهمی <small>باهم برنامه‌ریزی کنید</small></a><nav>{% if user.is_authenticated %}<span>سلام، {{ user.name }}</span><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link-btn">خروج</button></form>{% else %}<a href="{% url 'login' %}">ورود</a><a class="button small" href="{% url 'signup' %}">ثبت‌نام</a>{% endif %}</nav></div></header><main class="shell">{% block content %}{% endblock %}</main><script src="{% static 'vendor/jalali-datepicker/jalalidatepicker.min.js' %}"></script><script>if(window.jalaliDatepicker){jalaliDatepicker.startWatch({time:true,autoReadOnlyInput:true,separatorChars:{date: "-"}});}</script>{% block scripts %}{% endblock %}</body></html>

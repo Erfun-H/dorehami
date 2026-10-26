@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Event unavailable{% endblock %}
+{% block title %}دورهمی در دسترس نیست{% endblock %}
 
 {% block content %}
-  <h1 class="text-2xl font-semibold">This event is unavailable.</h1>
-  <p class="mt-3">The invitation link is not valid, or this event is no longer available.</p>
+  <section class="auth-card">
+    <p class="eyebrow">پیوند دعوت</p>
+    <h1>این دورهمی در دسترس نیست.</h1>
+    <p class="muted">پیوند دعوت معتبر نیست یا این دورهمی دیگر در دسترس نیست.</p>
+    <p class="actions"><a class="button" href="{% url 'home' %}">رفتن به صفحه اصلی</a></p>
+  </section>
 {% endblock %}
