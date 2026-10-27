@@ -19,7 +19,7 @@ createdb dorehami
 cp .env.example .env.dev
 ```
 
-Set `DATABASE_URL` in `.env.dev` to the local PostgreSQL database. Export that file, then initialize and start the application from the repository root:
+Set the `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, and `POSTGRES_PORT` variables in `.env.dev` for the local PostgreSQL database. Export that file, then initialize and start the application from the repository root:
 
 ```bash
 set -a
