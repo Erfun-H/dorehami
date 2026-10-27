@@ -1,49 +1,55 @@
-# دورهمی (Dorehami)
+<p align="center">
+  <strong>
+    <span>English</span> | <a href="README.fa.md">فارسی</a>
+  </strong>
+</p>
 
-وب‌اپلیکیشنی برای هماهنگی قرارهای جمعی: میزبان یک دورهمی می‌سازد، لینک دعوت را با دوستانش به اشتراک می‌گذارد، همه تاریخ و ساعت پیشنهاد می‌دهند، روی پیشنهادها توافق می‌کنند و در نهایت میزبان زمان نهایی را قطعی می‌کند.
+# Dorehami
 
-## امکانات
+A web app for coordinating get-togethers: the host creates a get-together, shares the invitation link with friends, everyone proposes dates and times, they agree on the suggestions, and finally the host locks in the final time.
 
-- **حساب کاربری** — ثبت‌نام و login با ایمیل و رمز عبور.
-- **ساخت دورهمی** — عنوان و توضیحات دلخواه؛ هر دورهمی یک لینک دعوت با توکن تصادفی می‌گیرد.
-- **عضویت با لینک دعوت** — کاربر واردشده که لینک معتبر یک دورهمی فعال را باز کند، به‌عنوان شرکت‌کننده اضافه می‌شود.
-- **پیشنهاد تاریخ** — شرکت‌کننده‌ها با datepicker جلالی پیشنهاد تاریخ/ساعت ثبت می‌کنند؛ هر پیشنهاد فقط توسط سازنده‌اش قابل ویرایش است.
-- **توافق (Agreement)** — هر شرکت‌کننده روی هر پیشنهاد می‌تواند موافق باشد یا موافقتش را پس بگیرد.
-- **قطعی کردن (Finalize)** — فقط میزبان می‌تواند دورهمی را نهایی کند، و فقط وقتی حداقل یک توافق از سوی کسی غیر از خودش ثبت شده باشد. بعد از finalize همه پیشنهادها و توافق‌ها قفل می‌شوند و لینک دعوت دیگر عضو جدید نمی‌پذیرد.
+## Features
 
-## تکنولوژی‌ها
+- **User account** — sign up and login with email and password.
+- **Create a get-together** — a title and optional details; each get-together gets an invitation link with a random token.
+- **Join via invitation link** — a signed-in user who opens the valid link of an active get-together is added as a participant.
+- **Date suggestions** — participants submit date/time suggestions with the Jalali datepicker; each suggestion can only be edited by its creator.
+- **Agreement** — every participant can agree with any suggestion, or withdraw their agreement.
+- **Finalize** — only the host can finalize a get-together, and only when at least one agreement has been made by someone other than themselves. After finalize, all suggestions and agreements are locked and the invitation link no longer accepts new members.
 
-- Python 3.12 و Django 6
-- PostgreSQL با psycopg 3
-- django-jalali برای ذخیره و نمایش تاریخ شمسی (`jDateField` و فیلتر قالب `jformat`) + ویجت `jalali-datepicker`
-- Tailwind CSS 4 — سورس در `src/theme/`، خروجی build شده در `src/static/css/app.css`
-- Ruff برای lint و format، pytest و pytest-django برای تست
+## Technologies
 
-## راه‌اندازی
+- Python 3.12 and Django 6
+- PostgreSQL with psycopg 3
+- django-jalali for storing and displaying Jalali dates (`jDateField` and the `jformat` template filter) + the `jalali-datepicker` widget
+- Tailwind CSS 4 — source in `src/theme/`, built output in `src/static/css/app.css`
+- Ruff for lint and format, pytest and pytest-django for tests
 
-پیش‌نیازها: Python 3.12 و PostgreSQL در حال اجرا.
+## Setup
+
+Prerequisites: Python 3.12 and a running PostgreSQL.
 
 ```bash
-# virtualenv و نصب وابستگی‌ها
+# virtualenv and installing dependencies
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 
-# ساخت دیتابیس
+# create the database
 createdb dorehami
 
 # environment variables
-cp .env.example .env.dev   # مقادیر را مطابق سیستم خودتان تنظیم کنید
+cp .env.example .env.dev   # adjust the values for your system
 set -a; source .env.dev; set +a
 
-# اعمال مایگریشن‌ها و اجرای سرور
+# apply migrations and start the server
 python src/manage.py migrate
 python src/manage.py runserver
 ```
 
-اپلیکیشن روی `http://127.0.0.1:8000/` بالا می‌آید.
+The app runs at `http://127.0.0.1:8000/`.
 
-اگر خواستید CSS را دوباره build کنید (تغییر در `src/theme/input.css`):
+If you want to rebuild the CSS (after changing `src/theme/input.css`):
 
 ```bash
 cd src/theme && npm install && npm run build:css
@@ -51,16 +57,16 @@ cd src/theme && npm install && npm run build:css
 
 ### Environment variables
 
-| متغیر | توضیح |
+| Variable | Description |
 |---|---|
-| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | مشخصات اتصال به PostgreSQL |
-| `POSTGRES_HOST` / `POSTGRES_PORT` | آدرس و پورت دیتابیس |
-| `DJANGO_SECRET_KEY` | secret key جنگو (پیش‌فرض dev فقط برای توسعه است) |
-| `DJANGO_DEBUG` | `true` فقط برای توسعه؛ پیش‌فرض `False` |
-| `DJANGO_ALLOWED_HOSTS` | لیست hostهای مجاز با کاما (مبنای `CSRF_TRUSTED_ORIGINS` هم هست) |
-| `DJANGO_ADMIN_PATH` | مسیر پنل ادمین، پیش‌فرض `admin/` |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | PostgreSQL connection credentials |
+| `POSTGRES_HOST` / `POSTGRES_PORT` | Database address and port |
+| `DJANGO_SECRET_KEY` | Django secret key (the dev default is for development only) |
+| `DJANGO_DEBUG` | `true` for development only; defaults to `False` |
+| `DJANGO_ALLOWED_HOSTS` | Comma-separated list of allowed hosts (also the basis for `CSRF_TRUSTED_ORIGINS`) |
+| `DJANGO_ADMIN_PATH` | Admin panel path, defaults to `admin/` |
 
-## تست و lint
+## Tests and lint
 
 ```bash
 ruff check src
@@ -68,26 +74,26 @@ ruff format --check src
 PYTHONPATH=src pytest
 ```
 
-تست‌ها سناریوهای کلیدی را پوشش می‌دهند: ساخت حساب، محافظت لینک دعوت، عضویت، دسترسی‌های پیشنهاد، جایگزینی توافق، تساوی پیشنهادها و محدودیت‌های event نهایی‌شده.
+The tests cover the key scenarios: account creation, invitation link protection, joining, suggestion permissions, agreement replacement, suggestion ties, and finalized event restrictions.
 
-## ساختار پروژه
+## Project structure
 
 ```
 src/
-├── config/        # تنظیمات و URLهای اصلی جنگو
-├── accounts/      # User سفارشی، signup / login / logout
-├── events/        # مدل‌های Event، Participation، Suggestion، Agreement
-│                  #   + سرویس‌های هماهنگی و templatetagهای تاریخ جلالی
-├── templates/     # قالب‌های فارسی/RTL
-├── static/        # CSS، JS، فونت‌ها و کتابخانه‌های vendor
+├── config/        # Django settings and root URLs
+├── accounts/      # Custom User, signup / login / logout
+├── events/        # Event, Participation, Suggestion, Agreement models
+│                  #   + coordination services and Jalali date templatetags
+├── templates/     # Persian/RTL templates
+├── static/        # CSS, JS, fonts and vendor libraries
 └── manage.py
-specs/             # مشخصات و طرح featureها (spec-driven)
+specs/             # Feature specifications and plans (spec-driven)
 ```
 
-## گردش کار
+## Workflow
 
-1. میزبان ثبت‌نام می‌کند و event می‌سازد.
-2. لینک دعوت را برای مهمان‌ها می‌فرستد.
-3. مهمان‌ها با login و بازکردن لینک، عضو event می‌شوند.
-4. هر کس تاریخ‌های پیشنهادی خودش را ثبت می‌کند و روی پیشنهادهای دیگران توافق می‌کند.
-5. وقتی حداقل یک توافقِ غیرمیزبان ثبت شده باشد، میزبان event را finalize می‌کند و پیشنهاد منتخب به‌عنوان پیشنهاد نهایی ثبت می‌شود.
+1. The host signs up and creates an event.
+2. They send the invitation link to the guests.
+3. Guests log in and open the link to join the event.
+4. Each participant submits their own date suggestions and agrees on other people's suggestions.
+5. Once at least one non-host agreement has been made, the host finalizes the event and the chosen suggestion is recorded as the final one.
