@@ -4,6 +4,8 @@ from events import views
 
 urlpatterns = [
     path("new/", views.create_event, name="event-create"),
+    path("<str:token>/edit/", views.edit_event, name="event-edit"),
+    path("<str:token>/delete/", views.delete_event, name="event-delete"),
     path("<str:token>/", views.event_detail, name="event-detail"),
     path("<str:token>/suggestions/", views.create_suggestion, name="suggestion-create"),
     path(

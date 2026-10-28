@@ -1,0 +1,3 @@
+{% extends "base.html" %}
+{% block title %}ویرایش دورهمی{% endblock %}
+{% block content %}<section class="auth-card"><p class="eyebrow">ویرایش برنامه</p><h1>ویرایش دورهمی</h1><form method="post" class="form-stack">{% csrf_token %}<label>عنوان دورهمی{{ form.title }}{{ form.title.errors }}</label><label>توضیحات (اختیاری){{ form.details }}{{ form.details.errors }}</label><button type="submit" class="button">ذخیره تغییرات</button></form><p class="center"><a href="{% url 'event-detail' event.invite_token %}">انصراف و بازگشت به دورهمی</a></p></section>{% endblock %}

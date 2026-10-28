@@ -39,12 +39,12 @@ def test_agreeing_moves_the_participants_only_agreement(client, user_factory):
 
 
 @pytest.mark.django_db
-def test_agreeing_with_json_returns_authoritative_agreement_lists(client, user_factory):
+def test_agreeing_with_json_returns_rendered_sections(client, user_factory):
     organizer = user_factory(email="organizer@example.com", name="Organizer")
     invitee = user_factory(email="invitee@example.com", name="Invitee")
     event = Event.objects.create(organizer=organizer, title="Dinner")
     Participation.objects.create(event=event, user=invitee)
-    first = make_suggestion(event, "Park", 18)
+    make_suggestion(event, "Park", 18)
     second = make_suggestion(event, "Cafe", 19)
     client.force_login(invitee)
 
@@ -54,11 +54,38 @@ def test_agreeing_with_json_returns_authoritative_agreement_lists(client, user_f
     )
 
     assert response.status_code == 200
-    assert response.json() == {
-        "agreement": {"suggestion_id": second.pk},
-        "agreements": {str(first.pk): [], str(second.pk): ["Invitee"]},
-    }
+    data = response.json()
+    assert data["agreed"] is True
+    assert "Cafe" in data["suggestions_html"]
+    assert "Invitee" in data["suggestions_html"]
     assert Agreement.objects.get(event=event, participant__user=invitee).suggestion == second
+
+
+@pytest.mark.django_db
+def test_agreeing_again_with_the_same_suggestion_withdraws_it(client, user_factory):
+    organizer = user_factory(email="organizer@example.com", name="Organizer")
+    invitee = user_factory(email="invitee@example.com", name="Invitee")
+    event = Event.objects.create(organizer=organizer, title="Dinner")
+    Participation.objects.create(event=event, user=invitee)
+    suggestion = make_suggestion(event, "Cafe", 19)
+    client.force_login(invitee)
+
+    first = client.post(
+        reverse("suggestion-agree", args=[event.invite_token, suggestion.pk]),
+        HTTP_ACCEPT="application/json",
+    )
+    second = client.post(
+        reverse("suggestion-agree", args=[event.invite_token, suggestion.pk]),
+        HTTP_ACCEPT="application/json",
+    )
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json()["agreed"] is True
+    assert second.json()["agreed"] is False
+    assert "0 موافق" in second.json()["suggestions_html"]
+    assert "Invitee" not in second.json()["suggestions_html"]
+    assert not Agreement.objects.filter(event=event, participant__user=invitee).exists()
 
 
 @pytest.mark.django_db

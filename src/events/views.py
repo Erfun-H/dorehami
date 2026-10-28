@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST
 
 from events.forms import EventCreateForm, SuggestionForm
@@ -47,6 +48,17 @@ def _suggestion_for_event(event, suggestion_id):
     if suggestion is None:
         raise Http404
     return suggestion
+
+
+def _detail_partials(request, context):
+    return {
+        "suggestions_html": render_to_string(
+            "events/partials/suggestions.html", context, request=request
+        ),
+        "sidebar_html": render_to_string(
+            "events/partials/sidebar.html", context, request=request
+        ),
+    }
 
 
 def _detail_context(
@@ -102,6 +114,7 @@ def _detail_context(
             candidates[0] if is_organizer and len(candidates) == 1 else None
         ),
         "finalize_error": finalize_error,
+        "user_agreement": participation.agreements.filter(event=event).first(),
         **kwargs,
     }
 
@@ -136,12 +149,36 @@ def event_detail(request, token):
     return render(
         request,
         "events/detail.html",
-        _detail_context(
-            event,
-            participation,
-            user_agreement=participation.agreements.filter(event=event).first(),
-        ),
+        _detail_context(event, participation),
     )
+
+
+@login_required
+def edit_event(request, token):
+    event = _event_or_404(token)
+    if request.user != event.organizer or event.status != Event.Status.ACTIVE:
+        raise PermissionDenied
+    form = EventCreateForm(request.POST or None, instance=event)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect("event-detail", token=event.invite_token)
+    return render(request, "events/edit.html", {"form": form, "event": event})
+
+
+@login_required
+@require_POST
+def delete_event(request, token):
+    event = _event_or_404(token)
+    if request.user != event.organizer:
+        raise PermissionDenied
+    with transaction.atomic():
+        # The event row itself carries the protected final_suggestion FK, and
+        # suggestions protect their author participation, so both must be
+        # cleared before the cascading delete of the event.
+        Event.objects.filter(pk=event.pk).update(final_suggestion=None)
+        event.suggestions.all().delete()
+        event.delete()
+    return redirect("home")
 
 
 @login_required
@@ -209,29 +246,23 @@ def agree_suggestion(request, token, suggestion_id):
     participation = _require_active_participant(event, request.user)
     suggestion = _suggestion_for_event(event, suggestion_id)
     with transaction.atomic():
-        agreement, created = Agreement.objects.select_for_update().get_or_create(
-            event=event,
-            participant=participation,
-            defaults={"suggestion": suggestion},
+        agreement = (
+            Agreement.objects.select_for_update()
+            .filter(event=event, participant=participation)
+            .first()
         )
-        if not created and agreement.suggestion_id != suggestion.id:
+        if agreement and agreement.suggestion_id == suggestion.id:
+            agreement.delete()
+            agreed = False
+        else:
+            if agreement is None:
+                agreement = Agreement(event=event, participant=participation)
             agreement.suggestion = suggestion
             agreement.save()
+            agreed = True
     if "application/json" in request.headers.get("Accept", ""):
-        agreements = Agreement.objects.filter(event=event).values(
-            "suggestion_id", "participant__user__name"
-        )
-        grouped = {str(item.pk): [] for item in event.suggestions.all()}
-        for agreement_item in agreements:
-            grouped[str(agreement_item["suggestion_id"])].append(
-                agreement_item["participant__user__name"]
-            )
-        return JsonResponse(
-            {
-                "agreement": {"suggestion_id": suggestion.pk},
-                "agreements": grouped,
-            }
-        )
+        context = _detail_context(event, participation)
+        return JsonResponse({"agreed": agreed, **_detail_partials(request, context)})
     return redirect("event-detail", token=event.invite_token)
 
 
