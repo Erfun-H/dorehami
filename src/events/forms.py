@@ -5,6 +5,12 @@ from django_jalali.forms.widgets import jDateTimeInput
 
 from events.models import Event, Suggestion
 
+FIELD_CLASSES = (
+    "min-h-11 w-full rounded-[11px] border border-line bg-white px-3 py-2.5 "
+    "text-sm text-ink transition-colors focus:border-[#c49ab0] "
+    "focus:outline-[3px] focus:outline-[#f5eaf0]"
+)
+
 
 class EventCreateForm(forms.ModelForm):
     class Meta:
@@ -29,7 +35,12 @@ class EventCreateForm(forms.ModelForm):
 class SuggestionForm(forms.ModelForm):
     proposed_at = jDateTimeField(
         widget=jDateTimeInput(
-            attrs={"data-jdp": "", "autocomplete": "off", "required": True}
+            attrs={
+                "data-jdp": "",
+                "autocomplete": "off",
+                "required": True,
+                "class": FIELD_CLASSES,
+            }
         )
     )
 
@@ -37,7 +48,12 @@ class SuggestionForm(forms.ModelForm):
         model = Suggestion
         fields = ["proposed_at", "location", "description"]
 
-        widgets = {"description": forms.Textarea(attrs={"rows": 5})}
+        widgets = {
+            "location": forms.TextInput(attrs={"class": FIELD_CLASSES}),
+            "description": forms.Textarea(
+                attrs={"rows": 5, "class": FIELD_CLASSES + " min-h-0"}
+            ),
+        }
 
     def clean_location(self):
         location = (self.cleaned_data.get("location") or "").strip()

@@ -1,0 +1,94 @@
+{% load jformat event_tags %}
+<section class="min-w-0 rounded-[18px] border border-line bg-white p-6.25 shadow-[0_10px_35px_rgba(55,25,42,0.045)] max-[560px]:p-4.5">
+    <div class="mb-5.5 flex items-center justify-between gap-3 border-b border-[#f2ebef] pb-4 max-[560px]:items-start">
+        <div>
+            <h2 class="text-[19px] font-extrabold tracking-[-0.2px] text-ink">پیشنهادهای دورهمی</h2>
+            <p class="mt-0.75 text-xs text-muted">پیشنهادها را بررسی کنید و به گزینه دلخواهتان رأی دهید.</p>
+        </div>
+        <span class="min-w-7.5 rounded-[9px] bg-primary-light px-2.5 py-0.5 text-center text-xs font-bold text-primary">{{ suggestion_items|length }} پیشنهاد</span>
+    </div>
+
+    <div class="grid gap-4">
+        {% for item in suggestion_items %}
+        {% with suggestion=item.suggestion %}
+        {% with vote_count=suggestion.agreements_count %}
+        <article data-suggestion="{{ suggestion.pk }}"
+                 class="relative overflow-hidden rounded-2xl border bg-white p-5 transition-[border-color,box-shadow] duration-200 hover:border-[#d8b9ca] hover:shadow-[0_5px_18px_rgba(55,25,42,0.035)] motion-reduce:transition-none max-[560px]:p-4 {% if event.status == 'finalized' and suggestion == event.final_suggestion %}border-success bg-[linear-gradient(120deg,#fff_65%,#eaf6ef)]{% elif suggestion.pk in leading_ids %}border-[#c5dfce] bg-[linear-gradient(120deg,#fff_65%,#f5fbf7)]{% else %}border-line{% endif %}">
+            {% if event.status == 'finalized' and suggestion == event.final_suggestion or suggestion.pk in leading_ids %}
+                <span class="absolute inset-y-0 inset-s-0 w-1 rounded-e bg-success" aria-hidden="true"></span>
+            {% endif %}
+
+            <div class="flex items-start justify-between gap-3 max-[560px]:flex-wrap max-[560px]:items-start">
+                <div class="flex min-w-0 flex-1 items-start gap-3">
+                    <div class="grid size-10.75 shrink-0 place-items-center rounded-[13px] border border-[#efdfe8] bg-primary-light text-primary" aria-hidden="true">
+                        <svg class="size-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10.2c0 5.2-8 11-8 11s-8-5.8-8-11a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                    </div>
+                    <div>
+                        <h3 class="wrap-break-word text-[15px] font-bold text-ink">{{ suggestion.location }}</h3>
+                        <div class="mt-1 text-xs text-muted">پیشنهاد از {{ suggestion.author.user.name }}</div>
+                    </div>
+                </div>
+                <span class="inline-flex shrink-0 items-center gap-1.25 rounded-lg px-2.5 py-1 text-[11px] max-[560px]:whitespace-nowrap {% if event.status == 'finalized' and suggestion == event.final_suggestion or suggestion.pk in leading_ids %}bg-[#e6f5ec] text-[#176a45]{% else %}bg-[#f3f0f2] text-[#756b74]{% endif %}">{{ vote_count }} موافق</span>
+            </div>
+
+            <div class="mt-4.5 flex flex-wrap gap-x-5 gap-y-2.5 text-xs text-[#6e626c]">
+                <div class="flex items-center gap-1.75">
+                    <svg class="size-4.25 text-[#987086]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
+                    <span>{{ suggestion.proposed_at|event_date_in_persian }}</span>
+                </div>
+                <div class="flex items-center gap-1.75">
+                    <svg class="size-4.25 text-[#987086]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+                    <span>ساعت {{ suggestion.proposed_at|jformat:"%H:%M" }}</span>
+                </div>
+            </div>
+
+            {% if suggestion.description %}
+                <p class="mt-3 text-[13px] text-muted">{{ suggestion.description }}</p>
+            {% endif %}
+
+            <div class="mt-4.5 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3.5 max-[560px]:items-start">
+                {{ item.voters|json_script:item.voters_element_id }}
+                <button class="agree-summary inline-flex items-center gap-1.75 rounded-lg border px-2.5 py-1.75 text-xs font-bold transition-colors duration-200 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] motion-reduce:transition-none {% if vote_count == 0 %}cursor-default border-transparent bg-transparent text-muted{% else %}cursor-pointer border-[#d7ebdf] bg-[#f5fbf7] text-success hover:bg-[#e8f6ed]{% endif %}"
+                        data-voters="{{ suggestion.pk }}" type="button" {% if vote_count == 0 %}disabled{% endif %}>
+                    <span>{{ vote_count }} موافق</span>
+                </button>
+
+                {% if event.status == 'active' %}
+                <div class="flex flex-wrap items-center gap-2 max-[560px]:w-full">
+                    <form class="agreement-form contents" method="post" action="{% url 'suggestion-agree' event.invite_token suggestion.pk %}">
+                        {% csrf_token %}
+                        <button class="inline-flex max-[560px]:flex-1 items-center justify-center gap-1.75 rounded-[9px] border px-2.5 py-1.5 text-[11px] transition-colors duration-200 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] motion-reduce:transition-none max-[560px]:min-h-9 {% if user_agreement.suggestion.pk == suggestion.pk %}border-[#b9dcc7] bg-success-soft font-bold text-success shadow-[inset_0_0_0_1px_#b9dcc7]{% else %}border-line bg-white text-[#625862] hover:bg-page{% endif %}"
+                                type="submit" {% if user_agreement.suggestion.pk == suggestion.pk %}title="برای پس گرفتن موافقت کلیک کنید"{% endif %}>
+                            موافقم
+                        </button>
+                    </form>
+                    {% if suggestion.author.user == user %}
+                        <button class="inline-flex max-[560px]:flex-1 items-center justify-center gap-1.75 rounded-[9px] border border-line bg-white px-2.5 py-1.5 text-[11px] text-[#625862] transition-colors duration-200 hover:bg-page focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:min-h-9"
+                                data-edit="{{ suggestion.pk }}" type="button">ویرایش</button>
+                    {% endif %}
+                    {% if suggestion.author.user == user or user == event.organizer %}
+                        <form method="post" action="{% url 'suggestion-delete' event.invite_token suggestion.pk %}" class="contents" data-confirm="این پیشنهاد حذف شود؟">
+                            {% csrf_token %}
+                            <button class="inline-flex max-[560px]:flex-1 items-center justify-center gap-1.75 rounded-[9px] border border-[#f0d0d0] bg-[#fff1f1] px-2.5 py-1.5 text-[11px] text-[#a43838] transition-colors duration-200 hover:bg-[#ffe8e8] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:min-h-9"
+                                    type="submit">حذف</button>
+                        </form>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% endwith %}
+        {% endwith %}
+        {% empty %}
+            <div class="px-3 py-7 text-center text-[13px] text-muted">هنوز پیشنهادی ثبت نشده. اولین پیشنهاد را شما بدهید!</div>
+        {% endfor %}
+    </div>
+
+    {% if event.status == 'active' %}
+    <button class="mt-4.5 min-h-12 w-full rounded-[13px] border border-dashed border-[#cdb4c2] bg-[#fcf8fa] text-sm font-bold text-primary transition-colors duration-200 hover:bg-primary-light focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]"
+            id="open-add-suggestion" type="button">
+        <svg class="ml-1.5 inline size-4.25 align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        افزودن پیشنهاد جدید
+    </button>
+    {% endif %}
+</section>

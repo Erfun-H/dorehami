@@ -1,0 +1,76 @@
+{% load jformat event_tags %}
+{% if event.status == 'active' %}
+<aside class="grid items-start gap-5">
+    <section
+        class="rounded-[18px] bg-[linear-gradient(145deg,#87395f,#692746)] p-5.5 text-white shadow-[0_10px_25px_rgba(105,39,70,0.15)]">
+        <h2 class="mb-1.75 text-base font-extrabold">دوستانتان را دعوت کنید</h2>
+        <p class="mb-4.25 text-xs text-[#f0dce6]">لینک رویداد را برایشان بفرستید تا بتوانند وارد دورهمی شوند و پیشنهاد
+            دهند.</p>
+        <button
+            class="inline-flex min-h-10.75 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-[13px] font-semibold text-primary-dark transition-colors duration-200 hover:bg-primary-light focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]"
+            id="open-invite-modal" type="button">
+            <svg class="size-4.25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path
+                    d="M12 20v-7M12 13C7 13 5 10 5 7a3 3 0 0 1 5.7-1.2A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 1.3-2.2A3 3 0 0 1 19 7c0 3-2 6-7 6Z" />
+            </svg>
+            دعوت اعضا
+        </button>
+    </section>
+
+    {% if user == event.organizer %}
+    <section class="rounded-[18px] border border-[#cce2d4] bg-[linear-gradient(145deg,#f8fcf9,#eff8f2)] p-5.5">
+        <h2 class="mb-4.5 text-base font-extrabold text-ink">نهایی کردن دورهمی</h2>
+        {% if finalize_error %}
+        <p class="mb-3.5 text-xs text-[#a43838]">{{ finalize_error }}</p>
+        {% endif %}
+        {% if winning_suggestion %}
+        <p class="mb-3.5 text-xs text-[#60776a]">بیشترین موافقت برای <b>{{ winning_suggestion.location }}</b> است.</p>
+        <form method="post" action="{% url 'event-finalize' event.invite_token %}">
+            {% csrf_token %}
+            <input type="hidden" name="suggestion_id" value="{{ winning_suggestion.pk }}">
+            <button
+                class="inline-flex min-h-10.75 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]"
+                type="submit">انتخاب پیشنهاد نهایی</button>
+        </form>
+        {% elif tied_suggestions %}
+        <p class="mb-3.5 text-xs text-[#60776a]">چند پیشنهاد با موافقان برابر وجود دارد:</p>
+        <form method="post" action="{% url 'event-finalize' event.invite_token %}">
+            {% csrf_token %}
+            <div class="mb-4 grid gap-2.5" role="radiogroup" aria-label="انتخاب پیشنهاد نهایی">
+                {% for suggestion in tied_suggestions %}
+                <label class="block cursor-pointer">
+                    <span
+                        class="grid grid-cols-[25px_minmax(0,1fr)] items-start gap-x-2.5 gap-y-1.5 rounded-[13px] border border-[#e9e0e6] bg-white p-3.5 transition-colors has-checked:border-[#b9809f] has-checked:bg-[#fcf5f9] has-checked:shadow-[0_0_0_2px_#f5e7ef] has-focus-visible:outline-[3px] has-focus-visible:outline-offset-2 has-focus-visible:outline-[#e4bfd2]">
+                        <span
+                            class="row-span-2 grid size-5.5 place-items-center self-start rounded-full border-[1.5px] border-[#d8c9d2] bg-white text-transparent has-checked:border-primary has-checked:bg-primary has-checked:text-white">
+                            <input type="radio" name="suggestion_id" value="{{ suggestion.pk }}" class="sr-only" {% if forloop.first %}checked{% endif %} required>
+                            <svg class="size-3.25" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="m5 12 4 4L19 6" />
+                            </svg>
+                        </span>
+                        <span class="wrap-break-word text-[13px] font-bold text-ink">{{ suggestion.location }}</span>
+                        <span class="flex items-center gap-1.5 text-[11px] text-muted">
+                            <svg class="size-4.25" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="8.5" />
+                                <path d="M12 7v5l3.5 2" />
+                            </svg>
+                            {{ suggestion.proposed_at|event_date_in_persian:True }}
+                        </span>
+                    </span>
+                </label>
+                {% endfor %}
+            </div>
+            <button
+                class="inline-flex min-h-10.75 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]"
+                type="submit">نهایی‌کردن پیشنهاد انتخاب‌شده</button>
+        </form>
+        {% else %}
+        <p class="text-xs text-[#60776a]">برای نهایی‌کردن، دست‌کم یک موافقت از مهمان لازم است.</p>
+        {% endif %}
+    </section>
+    {% endif %}
+</aside>
+{% endif %}

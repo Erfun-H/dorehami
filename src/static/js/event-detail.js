@@ -7,19 +7,26 @@ document.addEventListener("DOMContentLoaded", () => {
   // Toast notifications
   let toastTimer;
   const toast = document.querySelector("#toast");
+  const TOAST_SHOWN = ["opacity-100", "translate-y-0"];
+  const TOAST_HIDDEN = ["opacity-0", "translate-y-2.5"];
   const showToast = (message) => {
     if (!toast) return;
     toast.textContent = message;
-    toast.classList.add("show");
+    toast.classList.add(...TOAST_SHOWN);
+    toast.classList.remove(...TOAST_HIDDEN);
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("show"), 3000);
+    toastTimer = setTimeout(() => {
+      toast.classList.add(...TOAST_HIDDEN);
+      toast.classList.remove(...TOAST_SHOWN);
+    }, 3000);
   };
 
-  // Modal functions
+  // Modal functions — backdrops start hidden and are shown with display:flex.
   const openModal = (id) => {
     const modal = document.getElementById(id);
     if (!modal) return;
-    modal.classList.add("open");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
     document.body.style.overflow = "hidden";
     modal.querySelector(".close-button")?.focus();
   };
@@ -27,42 +34,64 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModal = (id) => {
     const modal = document.getElementById(id);
     if (!modal) return;
-    modal.classList.remove("open");
-    if (!document.querySelector(".modal-backdrop.open")) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+    if (!document.querySelector(".modal-backdrop.flex, .modal-backdrop:not(.hidden)")) {
       document.body.style.overflow = "";
     }
   };
 
-  // Close modal handlers
-  document.querySelectorAll("[data-close]").forEach((btn) => {
-    btn.addEventListener("click", () => closeModal(btn.dataset.close));
+  // Delegated clicks so listeners keep working for content swapped in via AJAX.
+  document.addEventListener("click", (event) => {
+    const closer = event.target.closest("[data-close]");
+    if (closer) {
+      closeModal(closer.dataset.close);
+      return;
+    }
+
+    if (event.target.classList?.contains("modal-backdrop")) {
+      closeModal(event.target.id);
+      return;
+    }
+
+    if (event.target.closest("#open-members-modal")) {
+      openModal("members-modal");
+      return;
+    }
+
+    if (event.target.closest("#open-invite-modal")) {
+      openModal("invite-modal");
+      return;
+    }
+
+    if (event.target.closest("#open-add-suggestion")) {
+      openModal("add-suggestion-modal");
+      return;
+    }
+
+    const editButton = event.target.closest("[data-edit]");
+    if (editButton) {
+      openModal(`edit-modal-${editButton.dataset.edit}`);
+      return;
+    }
+
+    const summaryButton = event.target.closest(".agree-summary[data-voters]");
+    if (summaryButton && !summaryButton.disabled) {
+      renderVoters(votersFor(summaryButton));
+      openModal("voters-modal");
+    }
   });
 
-  document.querySelectorAll(".modal-backdrop").forEach((backdrop) => {
-    backdrop.addEventListener("click", (e) => {
-      if (e.target === backdrop) closeModal(backdrop.id);
-    });
-  });
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      const open = document.querySelector(".modal-backdrop.open");
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      const open = document.querySelector(".modal-backdrop:not(.hidden)");
       if (open) closeModal(open.id);
     }
   });
 
-  // Members modal
-  document.querySelector("#open-members-modal")?.addEventListener("click", () => {
-    openModal("members-modal");
-  });
-
-  // Invite modal
-  document.querySelector("#open-invite-modal")?.addEventListener("click", () => {
-    openModal("invite-modal");
-  });
-
   // Copy link
-  document.querySelector("#copy-link")?.addEventListener("click", async () => {
+  document.addEventListener("click", async (event) => {
+    if (!event.target.closest("#copy-link")) return;
     const input = document.querySelector("#invite-link");
     if (!input) return;
     try {
@@ -75,7 +104,8 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Share link
-  document.querySelector("#share-link")?.addEventListener("click", async () => {
+  document.addEventListener("click", async (event) => {
+    if (!event.target.closest("#share-link")) return;
     const url = document.querySelector("#invite-link")?.value;
     if (!url) return;
     if (navigator.share) {
@@ -94,50 +124,39 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Voters modal — names are embedded per card as JSON and kept fresh after AJAX votes.
-  const votersData = {};
-  document.querySelectorAll("[data-suggestion]").forEach((card) => {
-    const script = card.querySelector('script[type="application/json"]');
-    if (!script) return;
+  // Voters modal — names live in a JSON script tag inside each suggestion card,
+  // so they are read at click time and stay fresh after AJAX swaps.
+  const votersFor = (button) => {
+    const card = button.closest("[data-suggestion]");
+    const script = card?.querySelector('script[type="application/json"]');
+    if (!script) return [];
     try {
-      votersData[card.dataset.suggestion] = JSON.parse(script.textContent);
+      return JSON.parse(script.textContent);
     } catch {
-      votersData[card.dataset.suggestion] = [];
+      return [];
     }
-  });
+  };
 
   const renderVoters = (names) => {
     const list = document.querySelector("#voter-list");
     if (!list) return;
     list.innerHTML = names.length
       ? names.map((name) => `
-          <div class="voter-row">
-            <span class="avatar" aria-hidden="true">${escapeHtml(String(name).slice(0, 1))}</span>
+          <div class="flex items-center gap-[13px] border-b border-line py-3 last:border-b-0">
+            <span class="grid size-10.5 shrink-0 place-items-center rounded-full bg-[linear-gradient(145deg,#f7e8f0,#ead0df)] text-xs font-bold text-primary-dark" aria-hidden="true">${escapeHtml(String(name).slice(0, 1))}</span>
             <div>
-              <div class="voter-name">${escapeHtml(name)}</div>
-              <div class="voter-caption">موافق این پیشنهاد</div>
+              <div class="text-[13px] font-semibold text-ink">${escapeHtml(name)}</div>
+              <div class="text-[11px] text-muted">موافق این پیشنهاد</div>
             </div>
           </div>`).join("")
-      : '<div class="empty-state">هنوز کسی موافق نیست.</div>';
+      : '<div class="px-3 py-7 text-center text-[13px] text-muted">هنوز کسی موافق نیست.</div>';
     const subtitle = document.querySelector("#voters-subtitle");
     if (subtitle) {
-      subtitle.textContent = names.length === 1
-        ? "۱ نفر موافق است"
-        : `${names.length} نفر موافق‌اند`;
+      subtitle.textContent = names.length === 0
+        ? "هنوز کسی موافق نیست."
+        : `${names.length} موافق`;
     }
   };
-
-  document.querySelectorAll(".agree-summary[data-voters]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      renderVoters(votersData[btn.dataset.voters] || []);
-      openModal("voters-modal");
-    });
-  });
-
-    // Add suggestion button - open modal
-  document.querySelector("#open-add-suggestion")?.addEventListener("click", () => {
-    openModal("add-suggestion-modal");
-  });
 
   // Add suggestion form AJAX submission
   document.querySelector("#add-suggestion-form")?.addEventListener("submit", async (e) => {
@@ -171,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
           Object.entries(data.errors).forEach(([field, errors]) => {
             const input = form.querySelector(`[name="${field}"]`);
             if (!input) return;
-            const fieldDiv = input.closest(".form-field") || input.parentElement;
+            const fieldDiv = input.closest(".mb-4") || input.parentElement;
             let errorDiv = fieldDiv.querySelector(".errorlist");
             if (!errorDiv) {
               errorDiv = document.createElement("ul");
@@ -191,76 +210,63 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Edit suggestion buttons
-  document.querySelectorAll("[data-edit]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const suggestionId = btn.dataset.edit;
-      openModal(`edit-modal-${suggestionId}`);
-    });
-  });
+  // Delegated submits: confirmation prompts and the AJAX agreement toggle.
+  document.addEventListener("submit", (event) => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
 
-  // Delete confirmation
-  document.querySelectorAll(".delete-form").forEach((form) => {
-    form.addEventListener("submit", (e) => {
-      if (!confirm("پیشنهاد حذف شود؟")) {
-        e.preventDefault();
-      }
-    });
-  });
-
-  // Agreement form AJAX submission
-  document.querySelectorAll(".agreement-form").forEach((form) => {
-    form.addEventListener("submit", async (event) => {
+    if (form.dataset.confirm && !confirm(form.dataset.confirm)) {
       event.preventDefault();
-      const buttons = [...document.querySelectorAll(".agreement-form button")];
-      buttons.forEach((button) => { button.disabled = true; });
-      showToast("در حال ثبت موافقت…");
-      try {
-        const response = await fetch(form.action, {
-          method: "POST",
-          body: new FormData(form),
-          credentials: "same-origin",
-          headers: {
-            Accept: "application/json",
-            "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]")?.value
-          },
-        });
-        if (!response.ok) throw new Error("Agreement failed");
-        const data = await response.json();
-        
-        // Update all suggestion cards with new agreement counts
-        Object.entries(data.agreements).forEach(([id, names]) => {
-          votersData[id] = names;
-          const card = document.querySelector(`[data-suggestion="${id}"]`);
-          if (!card) return;
+      return;
+    }
 
-          const countEl = card.querySelector(".status");
-          const summaryEl = card.querySelector(".agree-summary span:last-child");
-          const agreeBtn = card.querySelector(".agree-button");
-
-          if (countEl) countEl.textContent = `${names.length} موافق`;
-          const summaryBtn = card.querySelector(".agree-summary");
-          if (summaryBtn) summaryBtn.disabled = names.length === 0;
-          if (summaryEl) {
-            summaryEl.textContent = names.length === 0
-              ? "هنوز کسی موافق نیست"
-              : names.length === 1
-                ? "۱ نفر موافق است"
-                : `${names.length} نفر موافق‌اند`;
-          }
-          if (agreeBtn) {
-            const isAgreed = data.agreement && data.agreement.suggestion_id == id;
-            agreeBtn.textContent = "موافقم";
-            agreeBtn.classList.toggle("agreed", isAgreed);
-          }
-        });
-        
-        showToast("موافقت شما ثبت شد.");
-      } catch {
-        showToast("ثبت موافقت انجام نشد. لطفاً دوباره تلاش کنید.");
-      } finally {
-        buttons.forEach((button) => { button.disabled = false; });
-      }
-    });
+    if (form.classList.contains("agreement-form")) {
+      event.preventDefault();
+      toggleAgreement(form);
+    }
   });
+
+  // Agreement toggle — the server answers with freshly rendered sections and
+  // the new agreement state; swapping them keeps counts, leading marks and
+  // the organizer's finalize box in sync with the database.
+  const toggleAgreement = async (form) => {
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn?.textContent;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "در حال ثبت…";
+    }
+
+    try {
+      const response = await fetch(form.action, {
+        method: "POST",
+        body: new FormData(form),
+        credentials: "same-origin",
+        headers: {
+          Accept: "application/json",
+          "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]")?.value,
+        },
+      });
+      if (!response.ok) throw new Error("Agreement failed");
+      const data = await response.json();
+
+      const suggestionsSlot = document.querySelector("#suggestions-slot");
+      if (data.suggestions_html && suggestionsSlot) {
+        suggestionsSlot.innerHTML = data.suggestions_html;
+      }
+      const sidebarSlot = document.querySelector("#sidebar-slot");
+      if (data.sidebar_html && sidebarSlot) {
+        sidebarSlot.innerHTML = data.sidebar_html;
+      }
+
+      showToast(data.agreed ? "موافقت شما ثبت شد." : "موافقت شما پس گرفته شد.");
+    } catch {
+      showToast("ثبت موافقت انجام نشد. لطفاً دوباره تلاش کنید.");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
+    }
+  };
 });

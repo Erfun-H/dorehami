@@ -5,511 +5,12 @@
     {{ event.title }} | دورهمی
 {% endblock %}
 
-{% block extra_css %}
-<style>
-    :root {
-        --primary: #87395f;
-        --primary-dark: #692746;
-        --primary-light: #f7edf2;
-        --bg: #faf8f9;
-        --surface: #ffffff;
-        --text: #282329;
-        --muted: #817781;
-        --border: #eee7ec;
-        --success: #287a55;
-        --success-bg: #eaf6ef;
-        --radius: 18px;
-        --shadow: 0 8px 28px rgba(55, 25, 42, .045);
-    }
-
-    .event-hero-new {
-        position: relative;
-        overflow: hidden;
-        padding: 32px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        box-shadow: var(--shadow);
-        margin-bottom: 27px;
-    }
-
-    .hero-decoration {
-        position: absolute;
-        top: -80px;
-        left: -50px;
-        width: 240px;
-        height: 240px;
-        border-radius: 50%;
-        background: var(--primary-light);
-        opacity: .7;
-        pointer-events: none;
-    }
-
-    .hero-content { position: relative; z-index: 1; }
-
-    .event-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 5px 12px;
-        background: var(--primary-light);
-        color: var(--primary);
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .event-label-finalized { background: var(--success-bg); color: var(--success); }
-
-    .event-title-new {
-        margin: 14px 0 5px;
-        font-size: clamp(24px, 4vw, 34px);
-        line-height: 1.5;
-        font-weight: 800;
-        color: var(--text);
-    }
-
-    .event-description { max-width: 620px; margin: 0; color: var(--muted); font-size: 14px; }
-
-    .event-meta-new {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 18px;
-        margin-top: 23px;
-        color: #625862;
-        font-size: 13px;
-    }
-
-    .meta-item-new { display: flex; align-items: center; gap: 7px; }
-
-    .hero-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-top: 27px;
-        padding-top: 23px;
-        border-top: 1px solid var(--border);
-    }
-
-    .member-preview { display: flex; align-items: center; gap: 12px; }
-    .avatar-stack { display: flex; direction: ltr; padding-left: 5px; }
-
-    .avatar {
-        width: 34px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        flex-shrink: 0;
-        border: 2px solid white;
-        border-radius: 50%;
-        margin-left: -8px;
-        color: var(--primary-dark);
-        background: #f0dce6;
-        font-size: 12px;
-        font-weight: 700;
-        overflow: hidden;
-    }
-
-    .avatar img { width: 100%; height: 100%; object-fit: cover; }
-    .member-count { color: var(--muted); font-size: 13px; }
-
-    .final-suggestion {
-        background: linear-gradient(135deg, var(--success-bg) 0%, #fff 100%);
-        border: 1px solid #c5dfce;
-        border-radius: 16px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .final-suggestion h3 { margin: 0 0 8px; color: var(--success); font-size: 14px; font-weight: 700; }
-    .final-suggestion .location { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
-    .final-suggestion .datetime { color: var(--muted); font-size: 14px; }
-
-    .content-grid {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 290px;
-        gap: 24px;
-        align-items: start;
-    }
-
-    .section-card {
-        min-width: 0;
-        padding: 25px;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-    }
-
-    .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 22px; }
-    .section-title { margin: 0; font-size: 19px; font-weight: 800; color: var(--text); }
-    .section-subtitle { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
-    .suggestion-count { min-width: 30px; padding: 2px 9px; background: var(--primary-light); color: var(--primary); border-radius: 9px; text-align: center; font-size: 12px; font-weight: 700; }
-
-    .suggestion-list { display: grid; gap: 15px; }
-
-    .suggestion-card {
-        padding: 19px;
-        border: 1px solid var(--border);
-        border-radius: 16px;
-        background: var(--surface);
-        transition: border-color .2s, box-shadow .2s;
-    }
-
-    .suggestion-card:hover { border-color: #d8b9ca; box-shadow: 0 5px 18px rgba(55, 25, 42, .035); }
-    .suggestion-card.is-leading { border-color: #c5dfce; background: linear-gradient(120deg, #fff 65%, #f5fbf7); }
-    .suggestion-card.is-finalized { border-color: var(--success); background: linear-gradient(120deg, #fff 65%, var(--success-bg)); }
-
-    .suggestion-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .suggestion-location { display: flex; align-items: flex-start; gap: 12px; min-width: 0; flex: 1; }
-    .location-icon { width: 43px; height: 43px; display: grid; place-items: center; flex-shrink: 0; background: var(--primary-light); color: var(--primary); border-radius: 13px; font-size: 20px; }
-    .suggestion-name { margin: 0; font-size: 15px; font-weight: 700; overflow-wrap: anywhere; color: var(--text); }
-    .suggestion-author { margin-top: 4px; color: var(--muted); font-size: 12px; }
-
-    .status {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        flex-shrink: 0;
-        padding: 4px 9px;
-        border-radius: 8px;
-        background: #f3f0f2;
-        color: #756b74;
-        font-size: 11px;
-    }
-
-    .status-leading { color: var(--success); background: var(--success-bg); }
-
-    .suggestion-details { display: flex; flex-wrap: wrap; gap: 12px 20px; margin-top: 17px; color: #6e626c; font-size: 12px; }
-    .detail-item { display: flex; align-items: center; gap: 7px; }
-
-    .suggestion-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin-top: 17px;
-        padding-top: 14px;
-        border-top: 1px solid var(--border);
-    }
-
-    .agree-summary {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 5px 8px;
-        background: transparent;
-        color: var(--success);
-        border: 0;
-        border-radius: 8px;
-        font-size: 12px;
-        font-weight: 700;
-        cursor: pointer;
-        font-family: inherit;
-    }
-
-    .agree-summary:hover { background: var(--success-bg); }
-    .agree-summary:disabled { cursor: default; color: var(--muted); }
-
-    .suggestion-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-
-    .small-button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 5px;
-        padding: 6px 10px;
-        border: 1px solid var(--border);
-        border-radius: 9px;
-        background: white;
-        color: #625862;
-        font-size: 11px;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background .2s;
-    }
-
-    .small-button:hover { background: var(--bg); }
-    .small-button.agreed { color: var(--success); border-color: #b9dcc7; background: var(--success-bg); }
-    .small-button.danger { color: #a43838; background: #fff1f1; border-color: #f0d0d0; }
-    .small-button.danger:hover { background: #ffe8e8; }
-
-    .add-suggestion {
-        width: 100%;
-        margin-top: 18px;
-        min-height: 48px;
-        border: 1px dashed #cdb4c2;
-        border-radius: 13px;
-        background: #fcf8fa;
-        color: var(--primary);
-        font-weight: 700;
-        font-family: inherit;
-        cursor: pointer;
-        font-size: 14px;
-        transition: background .2s;
-    }
-
-    .add-suggestion:hover { background: var(--primary-light); }
-
-    .sidebar { display: grid; gap: 20px; }
-    .sidebar .section-card { padding: 22px; }
-    .sidebar-heading { margin: 0 0 18px; font-size: 16px; font-weight: 800; color: var(--text); }
-    .member-list { display: grid; gap: 16px; }
-    .member-row { display: flex; align-items: center; gap: 10px; min-width: 0; }
-    .member-row .avatar { width: 38px; height: 38px; margin: 0; border: 0; }
-    .member-info { min-width: 0; flex: 1; }
-    .member-name { display: block; font-size: 13px; font-weight: 600; overflow-wrap: anywhere; color: var(--text); }
-    .member-role { display: block; color: var(--muted); font-size: 11px; }
-    .organizer-badge { padding: 3px 7px; background: var(--primary-light); color: var(--primary); border-radius: 7px; font-size: 10px; font-weight: 600; }
-
-    .invite-card { background: var(--primary); color: white; border: 0; }
-    .invite-card .sidebar-heading { margin-bottom: 7px; }
-    .invite-card p { margin: 0 0 17px; color: #f0dce6; font-size: 12px; }
-    .invite-card .button-new { width: 100%; background: white; color: var(--primary-dark); }
-    .invite-card .button-new:hover { background: var(--primary-light); }
-
-    .finalize-card { border-color: #cce2d4; background: #f7fcf8; }
-    .finalize-card p { margin: 0 0 14px; color: #60776a; font-size: 12px; }
-    .finalize-card .button-new { width: 100%; }
-
-    .button-new {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        min-height: 43px;
-        padding: 9px 17px;
-        border: 1px solid transparent;
-        border-radius: 12px;
-        font-size: 13px;
-        font-weight: 600;
-        font-family: inherit;
-        cursor: pointer;
-        transition: background .2s, transform .2s;
-    }
-
-    .button-new:active { transform: scale(.98); }
-    .button-primary { background: var(--primary); color: white; }
-    .button-primary:hover { background: var(--primary-dark); }
-    .button-secondary { background: white; color: var(--text); border-color: var(--border); }
-    .button-secondary:hover { background: var(--bg); }
-
-    .empty-state { padding: 28px 12px; color: var(--muted); text-align: center; font-size: 13px; }
-
-    .members-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        background: var(--primary-light);
-        color: var(--primary);
-        border: 0;
-        border-radius: 10px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        font-family: inherit;
-        transition: background .2s;
-    }
-
-    .members-trigger:hover { background: #f0dce6; }
-
-    .modal-backdrop {
-        position: fixed;
-        inset: 0;
-        z-index: 100;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        background: rgba(35, 20, 30, .48);
-        backdrop-filter: blur(4px);
-    }
-
-    .modal-backdrop.open { display: flex; }
-
-    .modal {
-        width: min(440px, 100%);
-        max-height: min(650px, 90vh);
-        overflow-y: auto;
-        padding: 25px;
-        background: white;
-        border-radius: 22px;
-        box-shadow: 0 24px 80px rgba(25, 10, 20, .2);
-        animation: modal-in .18s ease-out;
-    }
-
-    @keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
-    .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 20px; }
-    .modal-title { margin: 0; font-size: 19px; font-weight: 800; color: var(--text); }
-    .modal-description { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
-    .close-button { width: 35px; height: 35px; flex-shrink: 0; border: 0; border-radius: 10px; background: #f5f1f4; color: #6e626c; font-size: 21px; line-height: 1; cursor: pointer; font-family: inherit; }
-    .close-button:hover { background: #ece3e9; }
-
-    .link-field { display: flex; gap: 8px; padding: 7px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); }
-    .link-field input { width: 100%; min-width: 0; padding: 6px; border: 0; outline: none; background: transparent; color: var(--muted); direction: ltr; text-align: left; font-size: 12px; font-family: inherit; }
-    .link-field .button-new { min-height: 37px; padding: 6px 11px; white-space: nowrap; }
-
-    .voter-list { display: grid; gap: 0; }
-    .voter-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .voter-row:last-child { border-bottom: 0; }
-    .voter-row .avatar { width: 42px; height: 42px; margin: 0; border: 0; }
-    .voter-name { font-size: 13px; font-weight: 600; color: var(--text); }
-    .voter-caption { color: var(--muted); font-size: 11px; }
-
-    .form-field { margin-bottom: 16px; }
-    .field-label { display: block; margin-bottom: 8px; font-size: 12px; font-weight: 700; color: var(--text); }
-
-    .form-field input, .form-field textarea, .form-field select {
-        width: 100%;
-        padding: 11px 12px;
-        border: 1px solid var(--border);
-        border-radius: 11px;
-        background: #fff;
-        color: var(--text);
-        font-family: inherit;
-        font-size: 14px;
-    }
-
-    .form-field input:focus, .form-field textarea:focus, .form-field select:focus {
-        border-color: #c49ab0;
-        outline: 3px solid #f5eaf0;
-    }
-
-    .form-field .errorlist { margin: 5px 0 0; padding: 0; list-style: none; color: #a43838; font-size: 11px; }
-    .date-time-inputs { display: grid; grid-template-columns: 1fr 130px; gap: 8px; }
-    .form-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 20px; }
-
-    .toast {
-        position: fixed;
-        z-index: 200;
-        bottom: 24px;
-        left: 24px;
-        max-width: calc(100% - 48px);
-        padding: 12px 17px;
-        background: #30242d;
-        color: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 28px #0002;
-        font-size: 13px;
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(10px);
-        transition: .2s ease;
-    }
-
-    .toast.show { opacity: 1; transform: translateY(0); }
-
-    @media (max-width: 850px) {
-        .content-grid { grid-template-columns: 1fr; }
-        .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
-        .invite-card { grid-column: 1 / -1; }
-    }
-
-    @media (max-width: 560px) {
-        .event-hero-new { padding: 22px 18px; }
-        .event-meta-new { gap: 10px 15px; }
-        .hero-footer { align-items: flex-start; flex-direction: column; }
-        .hero-footer > .button-new, .hero-footer > .members-trigger { width: 100%; }
-        .section-card { padding: 18px; }
-        .suggestion-card { padding: 15px; }
-        .suggestion-top { flex-wrap: wrap; }
-        .suggestion-footer { align-items: flex-start; }
-        .suggestion-actions { width: 100%; }
-        .suggestion-actions .small-button { flex: 1; }
-        .sidebar { grid-template-columns: 1fr; }
-        .invite-card { grid-column: auto; }
-        .modal { padding: 20px; border-radius: 18px; }
-        .date-time-inputs { grid-template-columns: 1fr; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-    }
-
-    /* UI refinement: cohesive icons, stronger hierarchy, and clearer tie selection. */
-    .ui-icon { width: 17px; height: 17px; display: inline-block; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; vertical-align: middle; }
-    .status-dot { width: 12px; height: 12px; stroke: none; }
-    .location-icon .ui-icon, .location-icon .location-svg { width: 22px; height: 22px; }
-    .event-hero-new { isolation: isolate; background: radial-gradient(ellipse at 100% 0%, #fbf2f7 0, #fff 48%); }
-    .hero-decoration { width: 290px; height: 290px; top: -120px; left: -90px; background: radial-gradient(circle, #f2dce8 0, #f8edf3 55%, transparent 72%); }
-    .event-title-new { letter-spacing: -.35px; overflow-wrap: anywhere; }
-    .event-meta-new { row-gap: 12px; }
-    .meta-item-new > .ui-icon { color: var(--primary); }
-    .content-grid { grid-template-columns: minmax(0, 1fr) minmax(250px, 290px); gap: 22px; }
-    .section-card { box-shadow: 0 10px 35px rgba(55, 25, 42, .045); }
-    .section-heading { padding-bottom: 16px; border-bottom: 1px solid #f2ebef; }
-    .section-title { letter-spacing: -.2px; }
-    .suggestion-card { position: relative; overflow: hidden; }
-    .suggestion-card.is-leading::before, .suggestion-card.is-finalized::before { content: ""; position: absolute; inset-block: 0; inset-inline-start: 0; width: 4px; background: var(--success); border-radius: 0 4px 4px 0; }
-    .suggestion-card.is-leading .status, .status-leading { color: #176a45; background: #e6f5ec; }
-    .location-icon { border: 1px solid #efdfE8; }
-    .suggestion-details { row-gap: 10px; }
-    .detail-item .ui-icon { color: #987086; }
-    .agree-summary { border: 1px solid transparent; padding: 7px 10px; }
-    .agree-summary:not(:disabled) { border-color: #d7ebdf; background: #f5fbf7; }
-    .agree-summary:not(:disabled):hover { background: #e8f6ed; }
-    .small-button, .button-new, .members-trigger, .add-suggestion { transition: background .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease; }
-    .small-button:focus-visible, .button-new:focus-visible, .members-trigger:focus-visible, .add-suggestion:focus-visible, .agree-summary:focus-visible, .close-button:focus-visible { outline: 3px solid #e4bfd2; outline-offset: 2px; }
-    .small-button.agreed { box-shadow: inset 0 0 0 1px #b9dcc7; font-weight: 700; }
-    .invite-card { background: linear-gradient(145deg, #87395f, #692746); box-shadow: 0 10px 25px rgba(105, 39, 70, .15); }
-    .finalize-card { background: linear-gradient(145deg, #f8fcf9, #eff8f2); }
-    .modal-backdrop { background: rgba(33, 18, 28, .56); backdrop-filter: blur(7px); }
-    .modal { border: 1px solid rgba(255,255,255,.7); box-shadow: 0 28px 90px rgba(25, 10, 20, .28); }
-    .close-button { display: inline-grid; place-items: center; }
-    .link-field:focus-within { border-color: #c49ab0; box-shadow: 0 0 0 3px #f5eaf0; }
-    .voter-row { gap: 13px; }
-    .voter-row .avatar { background: linear-gradient(145deg, #f7e8f0, #ead0df); }
-    .tie-options { display: grid; gap: 10px; margin: 12px 0 16px; }
-    .tie-option { display: block; cursor: pointer; }
-    .tie-option > input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-    .tie-option-content { display: grid; grid-template-columns: 25px minmax(0,1fr); align-items: start; column-gap: 10px; row-gap: 6px; padding: 13px; border: 1px solid #e9e0e6; border-radius: 13px; background: #fff; transition: border-color .18s, background .18s, box-shadow .18s; }
-    .tie-option-check { grid-row: span 2; width: 22px; height: 22px; display: grid; place-items: center; border: 1.5px solid #d8c9d2; border-radius: 50%; color: transparent; background: #fff; }
-    .tie-option-check svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-    .tie-option-title { color: var(--text); font-size: 13px; font-weight: 750; overflow-wrap: anywhere; }
-    .tie-option-meta { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
-    .tie-option input:checked + .tie-option-content { border-color: #b9809f; background: #fcf5f9; box-shadow: 0 0 0 2px #f5e7ef; }
-    .tie-option input:checked + .tie-option-content .tie-option-check { border-color: var(--primary); color: white; background: var(--primary); }
-    .tie-option input:focus-visible + .tie-option-content { outline: 3px solid #e4bfd2; outline-offset: 2px; }
-    .finalize-submit { width: 100%; }
-    .form-field input, .form-field textarea, .form-field select { min-height: 44px; }
-    .form-field textarea { resize: vertical; }
-    .toast { z-index: 250; }
-    @media (max-width: 850px) { .content-grid { grid-template-columns: minmax(0, 1fr); } }
-    @media (max-width: 560px) {
-        .event-hero-new { padding: 23px 18px; border-radius: 20px; }
-        .event-title-new { font-size: clamp(23px, 7vw, 30px); }
-        .event-meta-new { display: grid; grid-template-columns: 1fr; gap: 11px; }
-        .section-card { padding: 18px; }
-        .section-heading { align-items: flex-start; }
-        .suggestion-top { align-items: flex-start; }
-        .status { white-space: nowrap; }
-        .suggestion-actions .small-button { min-height: 36px; }
-        .link-field { align-items: stretch; flex-direction: column; }
-        .link-field .button-new { width: 100%; }
-        .modal-backdrop { padding: 12px; align-items: flex-end; }
-        .modal { width: 100%; max-height: min(82vh, 720px); border-radius: 22px 22px 16px 16px; padding: 20px; }
-        .form-actions { flex-direction: column-reverse; }
-        .form-actions .button-new { width: 100%; }
-    }
-    @media (prefers-reduced-motion: reduce) {
-        .suggestion-card, .small-button, .button-new, .members-trigger, .add-suggestion, .tie-option-content { transition: none !important; }
-    }
-
-</style>
-{% endblock %}
-
-
 {% block content %}
-    <section class="event-hero-new">
-        <div class="hero-decoration"></div>
-        <div class="hero-content">
-            <span class="event-label {% if event.status == 'finalized' %}event-label-finalized{% endif %}">
-                <svg class="ui-icon status-dot" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>
+    <section class="relative isolate mb-6.75 overflow-hidden rounded-3xl border border-line bg-[radial-gradient(ellipse_at_100%_0%,#fbf2f7_0,#fff_48%)] p-8 shadow-[0_8px_28px_rgba(55,25,42,0.045)] max-[560px]:rounded-[20px] max-[560px]:px-4.5 max-[560px]:py-6">
+        <div class="pointer-events-none absolute -left-22.5 -top-30 size-72.5 rounded-full bg-[radial-gradient(circle,#f2dce8_0,#f8edf3_55%,transparent_72%)] opacity-70" aria-hidden="true"></div>
+        <div class="relative">
+            <span class="inline-flex items-center gap-1.75 rounded-full px-3 py-1.25 text-xs font-semibold {% if event.status == 'finalized' %}bg-success-soft text-success{% else %}bg-primary-light text-primary{% endif %}">
+                <svg class="h-3 w-3" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="currentColor"/></svg>
                 {% if event.status == 'finalized' %}
                     برنامه نهایی شد
                 {% else %}
@@ -517,15 +18,15 @@
                 {% endif %}
             </span>
 
-            <h1 class="event-title-new">{{ event.title }}</h1>
+            <h1 class="mb-1.25 mt-3.5 wrap-break-word text-[clamp(24px,4vw,34px)] font-extrabold leading-normal tracking-[-0.35px] text-ink max-[560px]:text-[clamp(23px,7vw,30px)]">{{ event.title }}</h1>
 
             {% if event.details %}
-                <p class="event-description">{{ event.details }}</p>
+                <p class="max-w-155 text-sm text-muted">{{ event.details }}</p>
             {% endif %}
 
-            <div class="event-meta-new">
-                <div class="meta-item-new">
-                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
+            <div class="mt-6 flex flex-wrap gap-x-4.5 gap-y-3 text-[13px] text-[#625862] max-[560px]:grid max-[560px]:grid-cols-1 max-[560px]:gap-2.75">
+                <div class="flex items-center gap-1.75">
+                    <svg class="size-4.25 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
                     <span>
                         {% if event.status == 'finalized' and event.final_suggestion %}
                             {{ event.final_suggestion.proposed_at|event_date_in_persian }}
@@ -534,194 +35,87 @@
                         {% endif %}
                     </span>
                 </div>
-                <div class="meta-item-new">
-                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19M16 5.5a3 3 0 0 1 0 5.8M17 13.5a4.5 4.5 0 0 1 3.5 4.4V19"/></svg>
+                <div class="flex items-center gap-1.75">
+                    <svg class="size-4.25 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19M16 5.5a3 3 0 0 1 0 5.8M17 13.5a4.5 4.5 0 0 1 3.5 4.4V19"/></svg>
                     <span>{{ event.participations.count }} عضو</span>
                 </div>
-                <div class="meta-item-new">
-                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20v-7M12 13C7 13 5 10 5 7a3 3 0 0 1 5.7-1.2A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 1.3-2.2A3 3 0 0 1 19 7c0 3-2 6-7 6Z"/></svg>
+                <div class="flex items-center gap-1.75">
+                    <svg class="size-4.25 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20v-7M12 13C7 13 5 10 5 7a3 3 0 0 1 5.7-1.2A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 1.3-2.2A3 3 0 0 1 19 7c0 3-2 6-7 6Z"/></svg>
                     <span>ساخته‌شده توسط {{ event.organizer.name }}</span>
                 </div>
             </div>
 
             {% if event.status == 'finalized' and event.final_suggestion %}
-                <div class="final-suggestion">
-                    <h3>پیشنهاد نهایی</h3>
-                    <div class="location">{{ event.final_suggestion.location }}</div>
-                    <div class="datetime">{{ event.final_suggestion.proposed_at|event_date_in_persian:True }}</div>
+                <div class="mt-5 rounded-2xl border border-[#c5dfce] bg-[linear-gradient(135deg,#eaf6ef_0,#fff_100%)] p-5">
+                    <h3 class="mb-2 text-sm font-bold text-success">پیشنهاد نهایی</h3>
+                    <div class="mb-1 wrap-break-word text-lg font-bold text-ink">{{ event.final_suggestion.location }}</div>
+                    <div class="text-sm text-muted">{{ event.final_suggestion.proposed_at|event_date_in_persian:True }}</div>
                 </div>
             {% endif %}
 
-            <div class="hero-footer">
-                <div class="member-preview">
-                    <div class="avatar-stack" aria-hidden="true">
+            <div class="mt-6.5 flex flex-wrap items-center justify-between gap-4 border-t border-line pt-6 max-[560px]:flex-col max-[560px]:items-start">
+                <div class="flex items-center gap-3">
+                    <div class="flex pl-1.25 [direction:ltr]" aria-hidden="true">
                         {% for participant in participants|slice:":4" %}
-                            <span class="avatar">{{ participant.user.name|slice:":1" }}</span>
+                            <span class="-ml-2 grid size-8.5 shrink-0 place-items-center overflow-hidden rounded-full border-2 border-white bg-[#f0dce6] text-xs font-bold text-primary-dark">{{ participant.user.name|slice:":1" }}</span>
                         {% endfor %}
                     </div>
-                    <span class="member-count">با هم برنامه‌ریزی می‌کنید</span>
+                    <span class="text-[13px] text-muted">با هم برنامه‌ریزی می‌کنید</span>
                 </div>
-                <button class="members-trigger" id="open-members-modal" type="button">
-                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19M16 5.5a3 3 0 0 1 0 5.8M17 13.5a4.5 4.5 0 0 1 3.5 4.4V19"/></svg>
-                    مشاهده اعضا
-                </button>
+                <div class="flex flex-wrap items-center gap-2 max-[560px]:w-full max-[560px]:flex-col max-[560px]:items-stretch">
+                    <button class="inline-flex items-center gap-2 rounded-[10px] bg-primary-light px-3.5 py-2 text-[13px] font-semibold text-primary transition-colors duration-200 hover:bg-[#f0dce6] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full" id="open-members-modal" type="button">
+                        <svg class="size-4.25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2A4.8 4.8 0 0 1 8.3 13h1.4a4.8 4.8 0 0 1 4.8 4.8V19M16 5.5a3 3 0 0 1 0 5.8M17 13.5a4.5 4.5 0 0 1 3.5 4.4V19"/></svg>
+                        مشاهده اعضا
+                    </button>
+                    {% if user == event.organizer %}
+                        {% if event.status == 'active' %}
+                        <a href="{% url 'event-edit' event.invite_token %}"
+                           class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:bg-page focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full">
+                            ویرایش دورهمی
+                        </a>
+                        {% endif %}
+                        <form method="post" action="{% url 'event-delete' event.invite_token %}" class="contents" data-confirm="این دورهمی به‌همراه همه پیشنهادها و موافقت‌ها حذف شود؟ این کار قابل بازگشت نیست.">
+                            {% csrf_token %}
+                            <button class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl border border-[#f0d0d0] bg-[#fff1f1] px-4 py-2.5 text-[13px] font-semibold text-[#a43838] transition-colors duration-200 hover:bg-[#ffe8e8] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full" type="submit">
+                                حذف دورهمی
+                            </button>
+                        </form>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </section>
 
-    <div class="content-grid">
-        <section class="section-card">
-            <div class="section-heading">
-                <div>
-                    <h2 class="section-title">پیشنهادهای دورهمی</h2>
-                    <p class="section-subtitle">پیشنهادها را بررسی کنید و به گزینه دلخواهتان رأی دهید.</p>
-                </div>
-                <span class="suggestion-count">{{ suggestion_items|length }} پیشنهاد</span>
-            </div>
-
-            <div class="suggestion-list">
-                {% for item in suggestion_items %}
-                    {% with suggestion=item.suggestion %}
-                    {% with vote_count=suggestion.agreements_count %}
-                    <article class="suggestion-card {% if event.status == 'finalized' and suggestion == event.final_suggestion %}is-finalized{% endif %} {% if suggestion.pk in leading_ids %}is-leading{% endif %}" data-suggestion="{{ suggestion.pk }}">
-                        <div class="suggestion-top">
-                            <div class="suggestion-location">
-                                <div class="location-icon" aria-hidden="true"><svg class="ui-icon location-svg" viewBox="0 0 24 24"><path d="M20 10.2c0 5.2-8 11-8 11s-8-5.8-8-11a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
-                                <div>
-                                    <h3 class="suggestion-name">{{ suggestion.location }}</h3>
-                                    <div class="suggestion-author">پیشنهاد از {{ suggestion.author.user.name }}</div>
-                                </div>
-                            </div>
-                            <span class="status">{{ vote_count }} موافق</span>
-                        </div>
-
-                        <div class="suggestion-details">
-                            <div class="detail-item">
-                                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>
-                                <span>{{ suggestion.proposed_at|event_date_in_persian }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>
-                                <span>ساعت {{ suggestion.proposed_at|jformat:"%H:%M" }}</span>
-                            </div>
-                        </div>
-
-                        {% if suggestion.description %}
-                            <p style="margin: 12px 0 0; color: var(--muted); font-size: 13px;">{{ suggestion.description }}</p>
-                        {% endif %}
-
-                        <div class="suggestion-footer">
-                            {{ item.voters|json_script:item.voters_element_id }}
-                            <button class="agree-summary" data-voters="{{ suggestion.pk }}" type="button" {% if vote_count == 0 %}disabled{% endif %}>
-                                <span>{{ vote_count }} موافق</span>
-                            </button>
-
-                            {% if event.status == 'active' %}
-                            <div class="suggestion-actions">
-                                <form class="agreement-form" method="post" action="{% url 'suggestion-agree' event.invite_token suggestion.pk %}" style="display: contents;">
-                                    {% csrf_token %}
-                                    <button class="small-button {% if user_agreement.suggestion.pk == suggestion.pk %}agreed{% endif %}" type="submit">
-                                        موافقم
-                                    </button>
-                                </form>
-                                {% if suggestion.author.user == user %}
-                                    <button class="small-button" data-edit="{{ suggestion.pk }}" type="button">ویرایش</button>
-                                {% endif %}
-                                {% if suggestion.author.user == user or user == event.organizer %}
-                                    <form method="post" action="{% url 'suggestion-delete' event.invite_token suggestion.pk %}" style="display: contents;" class="delete-form">
-                                        {% csrf_token %}
-                                        <button class="small-button danger" type="submit">حذف</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                        </div>
-                    </article>
-                    {% endwith %}
-                    {% endwith %}
-                {% empty %}
-                    <div class="empty-state">هنوز پیشنهادی ثبت نشده. اولین پیشنهاد را شما بدهید!</div>
-                {% endfor %}
-            </div>
-
-            {% if event.status == 'active' %}
-            <button class="add-suggestion" id="open-add-suggestion" type="button">
-                <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-                افزودن پیشنهاد جدید
-            </button>
-            {% endif %}
-        </section>
-
+    <div class="grid items-start gap-5.5 max-[850px]:grid-cols-1 {% if event.status == 'active' %}grid-cols-[minmax(0,1fr)_minmax(250px,290px)]{% endif %}">
+        <div id="suggestions-slot">
+            {% include "events/partials/suggestions.html" %}
+        </div>
         {% if event.status == 'active' %}
-        <aside class="sidebar">
-            <section class="section-card invite-card">
-                <h2 class="sidebar-heading">دوستانتان را دعوت کنید</h2>
-                <p>لینک رویداد را برایشان بفرستید تا بتوانند وارد دورهمی شوند و پیشنهاد دهند.</p>
-                <button class="button-new" id="open-invite-modal" type="button">
-                    <svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 20v-7M12 13C7 13 5 10 5 7a3 3 0 0 1 5.7-1.2A3.6 3.6 0 0 1 12 8a3.6 3.6 0 0 1 1.3-2.2A3 3 0 0 1 19 7c0 3-2 6-7 6Z"/></svg>
-                    دعوت اعضا
-                </button>
-            </section>
-            
-            {% if user == event.organizer %}
-            <section class="section-card finalize-card">
-                <h2 class="sidebar-heading">نهایی کردن دورهمی</h2>
-                {% if finalize_error %}
-                    <p style="color: #a43838; margin-bottom: 14px; font-size: 12px;">{{ finalize_error }}</p>
-                {% endif %}
-                {% if winning_suggestion %}
-                    <p>بیشترین موافقت برای <b>{{ winning_suggestion.location }}</b> است.</p>
-                    <form method="post" action="{% url 'event-finalize' event.invite_token %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="suggestion_id" value="{{ winning_suggestion.pk }}">
-                        <button class="button-new button-primary" type="submit">انتخاب پیشنهاد نهایی</button>
-                    </form>
-                {% elif tied_suggestions %}
-                    <p>چند پیشنهاد با موافقان برابر وجود دارد:</p>
-                    <form method="post" action="{% url 'event-finalize' event.invite_token %}">
-                        {% csrf_token %}
-                        <div class="tie-options" role="radiogroup" aria-label="انتخاب پیشنهاد نهایی">
-                            {% for suggestion in tied_suggestions %}
-                                <label class="tie-option">
-                                    <input type="radio" name="suggestion_id" value="{{ suggestion.pk }}" {% if forloop.first %}checked{% endif %} required>
-                                    <span class="tie-option-content">
-                                        <span class="tie-option-check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg></span>
-                                        <span class="tie-option-title">{{ suggestion.location }}</span>
-                                        <span class="tie-option-meta"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></svg>{{ suggestion.proposed_at|event_date_in_persian:True }}</span>
-                                    </span>
-                                </label>
-                            {% endfor %}
-                        </div>
-                        <button class="button-new button-primary finalize-submit" type="submit">نهایی‌کردن پیشنهاد انتخاب‌شده</button>
-                    </form>
-                {% else %}
-                    <p>برای نهایی‌کردن، دست‌کم یک موافقت از مهمان لازم است.</p>
-                {% endif %}
-            </section>
-            {% endif %}
-        </aside>
+        <div id="sidebar-slot">
+            {% include "events/partials/sidebar.html" %}
+        </div>
         {% endif %}
     </div>
 
     <!-- Members Modal -->
-    <div class="modal-backdrop" id="members-modal" role="dialog" aria-modal="true">
-        <div class="modal">
-            <div class="modal-header">
+    <div class="modal-backdrop fixed inset-0 z-100 hidden items-center justify-center bg-[rgba(33,18,28,0.56)] p-5 backdrop-blur-[7px] max-[560px]:items-end max-[560px]:p-3" id="members-modal" role="dialog" aria-modal="true">
+        <div class="max-h-[min(650px,90vh)] w-full max-w-110 overflow-y-auto rounded-[22px] border border-white/70 bg-white p-6 shadow-[0_28px_90px_rgba(25,10,20,0.28)] animate-modal-in max-[560px]:max-h-[min(82vh,720px)] max-[560px]:rounded-[22px_22px_16px_16px] max-[560px]:p-5 motion-reduce:animate-none">
+            <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                    <h2 class="modal-title">اعضای رویداد</h2>
-                    <p class="modal-description">افرادی که در این دورهمی شرکت می‌کنند.</p>
+                    <h2 class="text-[19px] font-extrabold text-ink">اعضای رویداد</h2>
+                    <p class="mt-1.5 text-xs text-muted">افرادی که در این دورهمی شرکت می‌کنند.</p>
                 </div>
-                <button class="close-button" data-close="members-modal" aria-label="بستن" type="button">×</button>
+                <button class="inline-grid size-8.75 shrink-0 place-items-center rounded-[10px] bg-[#f5f1f4] text-[21px] leading-none text-[#6e626c] transition-colors hover:bg-[#ece3e9] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="members-modal" aria-label="بستن" type="button">×</button>
             </div>
-            <div class="voter-list">
+            <div class="grid">
                 {% for participant in participants %}
-                <div class="voter-row">
-                    <span class="avatar">{{ participant.user.name|slice:":1" }}</span>
-                    <div>
-                        <div class="voter-name">{{ participant.user.name }}</div>
-                        <div class="voter-caption">{% if participant.user == event.organizer %}میزبان رویداد{% else %}عضو رویداد{% endif %}</div>
+                <div class="flex items-center gap-3.25 border-b border-line py-3 last:border-b-0">
+                    <span class="grid size-10.5 shrink-0 place-items-center rounded-full bg-[linear-gradient(145deg,#f7e8f0,#ead0df)] text-xs font-bold text-primary-dark">{{ participant.user.name|slice:":1" }}</span>
+                    <div class="min-w-0 flex-1">
+                        <div class="wrap-break-word text-[13px] font-semibold text-ink">{{ participant.user.name }}</div>
+                        <div class="text-[11px] text-muted">{% if participant.user == event.organizer %}میزبان رویداد{% else %}عضو رویداد{% endif %}</div>
                     </div>
-                    {% if participant.user == event.organizer %}<span class="organizer-badge">میزبان</span>{% endif %}
+                    {% if participant.user == event.organizer %}<span class="shrink-0 rounded-[7px] bg-primary-light px-1.75 py-0.75 text-[10px] font-semibold text-primary">میزبان</span>{% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -729,113 +123,113 @@
     </div>
 
     <!-- Voters Modal -->
-    <div class="modal-backdrop" id="voters-modal" role="dialog" aria-modal="true">
-        <div class="modal">
-            <div class="modal-header">
+    <div class="modal-backdrop fixed inset-0 z-100 hidden items-center justify-center bg-[rgba(33,18,28,0.56)] p-5 backdrop-blur-[7px] max-[560px]:items-end max-[560px]:p-3" id="voters-modal" role="dialog" aria-modal="true">
+        <div class="max-h-[min(650px,90vh)] w-full max-w-110 overflow-y-auto rounded-[22px] border border-white/70 bg-white p-6 shadow-[0_28px_90px_rgba(25,10,20,0.28)] animate-modal-in max-[560px]:max-h-[min(82vh,720px)] max-[560px]:rounded-[22px_22px_16px_16px] max-[560px]:p-5 motion-reduce:animate-none">
+            <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                    <h2 class="modal-title">افراد موافق</h2>
-                    <p class="modal-description" id="voters-subtitle">افرادی که این پیشنهاد را انتخاب کرده‌اند.</p>
+                    <h2 class="text-[19px] font-extrabold text-ink">افراد موافق</h2>
+                    <p class="mt-1.25 text-xs text-muted" id="voters-subtitle">افرادی که این پیشنهاد را انتخاب کرده‌اند.</p>
                 </div>
-                <button class="close-button" data-close="voters-modal" aria-label="بستن" type="button">×</button>
+                <button class="inline-grid size-8.75 shrink-0 place-items-center rounded-[10px] bg-[#f5f1f4] text-[21px] leading-none text-[#6e626c] transition-colors hover:bg-[#ece3e9] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="voters-modal" aria-label="بستن" type="button">×</button>
             </div>
-            <div class="voter-list" id="voter-list"></div>
+            <div class="grid" id="voter-list"></div>
         </div>
     </div>
 
     <!-- Invite Modal -->
-    <div class="modal-backdrop" id="invite-modal" role="dialog" aria-modal="true">
-        <div class="modal">
-            <div class="modal-header">
+    <div class="modal-backdrop fixed inset-0 z-100 hidden items-center justify-center bg-[rgba(33,18,28,0.56)] p-5 backdrop-blur-[7px] max-[560px]:items-end max-[560px]:p-3" id="invite-modal" role="dialog" aria-modal="true">
+        <div class="max-h-[min(650px,90vh)] w-full max-w-110 overflow-y-auto rounded-[22px] border border-white/70 bg-white p-6 shadow-[0_28px_90px_rgba(25,10,20,0.28)] animate-modal-in max-[560px]:max-h-[min(82vh,720px)] max-[560px]:rounded-[22px_22px_16px_16px] max-[560px]:p-5 motion-reduce:animate-none">
+            <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                    <h2 class="modal-title">دعوت اعضا</h2>
-                    <p class="modal-description">لینک رویداد را با دوستانتان به اشتراک بگذارید.</p>
+                    <h2 class="text-[19px] font-extrabold text-ink">دعوت اعضا</h2>
+                    <p class="mt-1.25 text-xs text-muted">لینک رویداد را با دوستانتان به اشتراک بگذارید.</p>
                 </div>
-                <button class="close-button" data-close="invite-modal" aria-label="بستن" type="button">×</button>
+                <button class="inline-grid size-8.75 shrink-0 place-items-center rounded-[10px] bg-[#f5f1f4] text-[21px] leading-none text-[#6e626c] transition-colors hover:bg-[#ece3e9] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="invite-modal" aria-label="بستن" type="button">×</button>
             </div>
-            <label class="field-label" for="invite-link">لینک دعوت رویداد</label>
-            <div class="link-field">
-                <input id="invite-link" type="text" value="{{ request.scheme }}://{{ request.get_host }}{% url 'event-detail' event.invite_token %}" readonly>
-                <button class="button-new button-primary" id="copy-link" type="button">کپی لینک</button>
+            <label class="mb-2 block text-xs font-bold text-ink" for="invite-link">لینک دعوت رویداد</label>
+            <div class="flex gap-2 rounded-xl border border-line bg-page p-1.75 transition focus-within:border-[#c49ab0] focus-within:shadow-[0_0_0_3px_#f5eaf0] max-[560px]:flex-col max-[560px]:items-stretch">
+                <input id="invite-link" class="w-full min-w-0 border-0 bg-transparent p-1.5 text-left text-xs text-muted outline-none [direction:ltr]" type="text" value="{{ request.scheme }}://{{ request.get_host }}{% url 'event-detail' event.invite_token %}" readonly>
+                <button class="inline-flex min-h-9.25 items-center justify-center gap-2 whitespace-nowrap rounded-xl bg-primary px-3 py-1.5 text-[13px] font-semibold text-white transition-colors duration-200 hover:bg-primary-dark focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full" id="copy-link" type="button">کپی لینک</button>
             </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px;">
-                <button class="button-new button-secondary" id="share-link" type="button"><svg class="ui-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M14 5h5v5M19 5l-9 9"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg> اشتراک‌گذاری</button>
-                <button class="button-new button-secondary" data-close="invite-modal" type="button">بستن</button>
+            <div class="mt-4 grid grid-cols-2 gap-2.5 max-[560px]:grid-cols-1">
+                <button class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:bg-page focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" id="share-link" type="button"><svg class="size-4.25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 5h5v5M19 5l-9 9"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg> اشتراک‌گذاری</button>
+                <button class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:bg-page focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="invite-modal" type="button">بستن</button>
             </div>
         </div>
-        </div>
+    </div>
 
-        <!-- Add Suggestion Modal -->
-    <div class="modal-backdrop" id="add-suggestion-modal" role="dialog" aria-modal="true">
-        <div class="modal">
-            <div class="modal-header">
+    <!-- Add Suggestion Modal -->
+    <div class="modal-backdrop fixed inset-0 z-100 hidden items-center justify-center bg-[rgba(33,18,28,0.56)] p-5 backdrop-blur-[7px] max-[560px]:items-end max-[560px]:p-3" id="add-suggestion-modal" role="dialog" aria-modal="true">
+        <div class="max-h-[min(650px,90vh)] w-full max-w-110 overflow-y-auto rounded-[22px] border border-white/70 bg-white p-6 shadow-[0_28px_90px_rgba(25,10,20,0.28)] animate-modal-in max-[560px]:max-h-[min(82vh,720px)] max-[560px]:rounded-[22px_22px_16px_16px] max-[560px]:p-5 motion-reduce:animate-none">
+            <div class="mb-5 flex items-start justify-between gap-4">
                 <div>
-                    <h2 class="modal-title">پیشنهاد جدید</h2>
-                    <p class="modal-description">زمان و مکان پیشنهادی خود را وارد کنید.</p>
+                    <h2 class="text-[19px] font-extrabold text-ink">پیشنهاد جدید</h2>
+                    <p class="mt-1.25 text-xs text-muted">زمان و مکان پیشنهادی خود را وارد کنید.</p>
                 </div>
-                <button class="close-button" data-close="add-suggestion-modal" aria-label="بستن" type="button">×</button>
+                <button class="inline-grid size-8.75 shrink-0 place-items-center rounded-[10px] bg-[#f5f1f4] text-[21px] leading-none text-[#6e626c] transition-colors hover:bg-[#ece3e9] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="add-suggestion-modal" aria-label="بستن" type="button">×</button>
             </div>
-                <form id="add-suggestion-form" method="post" action="{% url 'suggestion-create' event.invite_token %}">
-                    {% csrf_token %}
-                    <div class="form-field">
-                        <label class="field-label">تاریخ و ساعت</label>
-                        {{ suggestion_form.proposed_at }}
-                        {{ suggestion_form.proposed_at.errors }}
-                    </div>
-                    <div class="form-field">
-                        <label class="field-label">مکان</label>
-                        {{ suggestion_form.location }}
-                        {{ suggestion_form.location.errors }}
-                    </div>
-                    <div class="form-field">
-                        <label class="field-label">توضیحات (اختیاری)</label>
-                        {{ suggestion_form.description }}
-                        {{ suggestion_form.description.errors }}
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="button-new button-secondary" data-close="add-suggestion-modal">انصراف</button>
-                        <button class="button-new button-primary" type="submit">ثبت پیشنهاد</button>
-                    </div>
-                </form>
+            <form id="add-suggestion-form" method="post" action="{% url 'suggestion-create' event.invite_token %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="mb-2 block text-xs font-bold text-ink">تاریخ و ساعت</label>
+                    {{ suggestion_form.proposed_at }}
+                    {{ suggestion_form.proposed_at.errors }}
+                </div>
+                <div class="mb-4">
+                    <label class="mb-2 block text-xs font-bold text-ink">مکان</label>
+                    {{ suggestion_form.location }}
+                    {{ suggestion_form.location.errors }}
+                </div>
+                <div class="mb-4">
+                    <label class="mb-2 block text-xs font-bold text-ink">توضیحات (اختیاری)</label>
+                    {{ suggestion_form.description }}
+                    {{ suggestion_form.description.errors }}
+                </div>
+                <div class="mt-5 flex justify-end gap-2.5 max-[560px]:flex-col-reverse">
+                    <button type="button" class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl border border-line bg-white px-4 py-2.5 text-[13px] font-semibold text-ink transition-colors duration-200 hover:bg-page focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full" data-close="add-suggestion-modal">انصراف</button>
+                    <button class="inline-flex min-h-10.75 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2] max-[560px]:w-full" type="submit">ثبت پیشنهاد</button>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Edit Suggestion Modals -->
     {% for item in suggestion_items %}
         {% if event.status == 'active' and item.suggestion.author.user == user %}
-        <div class="modal-backdrop" id="edit-modal-{{ item.suggestion.pk }}" role="dialog" aria-modal="true">
-            <div class="modal">
-                <div class="modal-header">
+        <div class="modal-backdrop fixed inset-0 z-100 hidden items-center justify-center bg-[rgba(33,18,28,0.56)] p-5 backdrop-blur-[7px] max-[560px]:items-end max-[560px]:p-3" id="edit-modal-{{ item.suggestion.pk }}" role="dialog" aria-modal="true">
+            <div class="max-h-[min(650px,90vh)] w-full max-w-110 overflow-y-auto rounded-[22px] border border-white/70 bg-white p-6 shadow-[0_28px_90px_rgba(25,10,20,0.28)] animate-modal-in max-[560px]:max-h-[min(82vh,720px)] max-[560px]:rounded-[22px_22px_16px_16px] max-[560px]:p-5 motion-reduce:animate-none">
+                <div class="mb-5 flex items-start justify-between gap-4">
                     <div>
-                        <h2 class="modal-title">ویرایش پیشنهاد</h2>
-                        <p class="modal-description">زمان و مکان پیشنهادی را تغییر دهید.</p>
+                        <h2 class="text-[19px] font-extrabold text-ink">ویرایش پیشنهاد</h2>
+                        <p class="mt-1.25 text-xs text-muted">زمان و مکان پیشنهادی را تغییر دهید.</p>
                     </div>
-                    <button class="close-button" data-close="edit-modal-{{ item.suggestion.pk }}" aria-label="بستن" type="button">×</button>
+                    <button class="inline-grid size-8.75 shrink-0 place-items-center rounded-[10px] bg-[#f5f1f4] text-[21px] leading-none text-[#6e626c] transition-colors hover:bg-[#ece3e9] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" data-close="edit-modal-{{ item.suggestion.pk }}" aria-label="بستن" type="button">×</button>
                 </div>
                 <form method="post" action="{% url 'suggestion-edit' event.invite_token item.suggestion.pk %}">
                     {% csrf_token %}
-                    <div class="form-field">
-                        <label class="field-label">تاریخ و ساعت</label>
+                    <div class="mb-4">
+                        <label class="mb-2 block text-xs font-bold text-ink">تاریخ و ساعت</label>
                         {{ item.edit_form.proposed_at }}
                         {{ item.edit_form.proposed_at.errors }}
                     </div>
-                    <div class="form-field">
-                        <label class="field-label">مکان</label>
+                    <div class="mb-4">
+                        <label class="mb-2 block text-xs font-bold text-ink">مکان</label>
                         {{ item.edit_form.location }}
                         {{ item.edit_form.location.errors }}
                     </div>
-                    <div class="form-field">
-                        <label class="field-label">توضیحات (اختیاری)</label>
+                    <div class="mb-4">
+                        <label class="mb-2 block text-xs font-bold text-ink">توضیحات (اختیاری)</label>
                         {{ item.edit_form.description }}
                         {{ item.edit_form.description.errors }}
                     </div>
-                    <button class="button-new button-primary" type="submit">ذخیره تغییرات</button>
+                    <button class="inline-flex min-h-10.75 w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-white transition-colors duration-200 hover:bg-primary-dark active:scale-[0.98] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#e4bfd2]" type="submit">ذخیره تغییرات</button>
                 </form>
             </div>
         </div>
         {% endif %}
     {% endfor %}
 
-    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="pointer-events-none fixed bottom-6 left-6 z-250 max-w-[calc(100%-48px)] translate-y-2.5 rounded-xl bg-[#30242d] px-4 py-3 text-[13px] text-white opacity-0 shadow-[0_8px_28px_rgba(0,0,0,0.13)] transition duration-200" id="toast" role="status" aria-live="polite"></div>
 {% endblock %}
 
 {% block scripts %}
